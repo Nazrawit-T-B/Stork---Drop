@@ -13,9 +13,10 @@ import static ui.Sidebar.createsidebar;
 
 public class Stork extends Application{
     BorderPane root=new BorderPane();
+    StackPane layout=new StackPane();
+
     public void start(Stage stage){
-        StackPane layout=new StackPane();
-        root.setLeft(createsidebar());
+        root.setLeft(createsidebar(root));
 
         BorderPane mainArea=new BorderPane();
         mainArea.setTop(SyncActivity());

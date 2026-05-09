@@ -10,10 +10,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import static ui.Dashboard.*;
+import static ui.FilesUI.Area;
+import static ui.FilesUI.FilesHeader;
 
 
 public class Sidebar {
-    public static VBox createsidebar() {
+    public static VBox createsidebar(BorderPane root) {
         VBox sidebar = new VBox(20);
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(200);
@@ -40,6 +43,18 @@ public class Sidebar {
         btnSync.setSelected(true);
         btnSync.setGraphic(syncIcon);
         btnSync.getStyleClass().add("nav-button");
+        btnSync.setOnAction(e -> {
+            BorderPane mainArea = new BorderPane();
+            mainArea.setTop(SyncActivity());
+            VBox leftComponent = new VBox(10);
+            leftComponent.getChildren().addAll(createSysHealth(), transfers());
+            VBox rightComponent = new VBox(10);
+            rightComponent.getChildren().addAll(activeStat(), recent());
+            mainArea.setLeft(leftComponent);
+            mainArea.setRight(rightComponent);
+            mainArea.setPadding(new Insets(24, 24, 24, 24));
+            root.setCenter(mainArea);
+        });
 
         ToggleButton btnFiles = new ToggleButton("Files");
         FontIcon filesIcon = new FontIcon("mdi2f-folder");
@@ -48,6 +63,25 @@ public class Sidebar {
         btnFiles.setToggleGroup(group);
         btnFiles.setGraphic(filesIcon);
         btnFiles.getStyleClass().add("nav-button");
+
+        btnFiles.setOnAction(e->{
+            BorderPane mainArea = new BorderPane();
+            mainArea.setTop(FilesHeader());
+            mainArea.setCenter(Area());
+
+            /*
+            VBox leftComponent = new VBox(10);
+            leftComponent.getChildren().addAll(createSysHealth(), transfers());
+            VBox rightComponent = new VBox(10);
+            rightComponent.getChildren().addAll(activeStat(), recent());
+            mainArea.setLeft(leftComponent);
+            mainArea.setRight(rightComponent);
+            mainArea.setPadding(new Insets(24, 24, 24, 24));
+
+             */
+            root.setCenter(mainArea);
+        });
+
 
 
         ToggleButton btnPermission = new ToggleButton("Permissions");
