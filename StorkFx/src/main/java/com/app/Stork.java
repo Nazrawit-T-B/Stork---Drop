@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -13,6 +14,7 @@ import static ui.Sidebar.createsidebar;
 public class Stork extends Application{
     BorderPane root=new BorderPane();
     public void start(Stage stage){
+        StackPane layout=new StackPane();
         root.setLeft(createsidebar());
 
         BorderPane mainArea=new BorderPane();
@@ -26,7 +28,8 @@ public class Stork extends Application{
         mainArea.setPadding(new Insets(24, 24, 24, 24));
 
         root.setCenter(mainArea);
-        Scene scene=new Scene(root,1200,800);
+        layout.getChildren().add(root);
+        Scene scene=new Scene(layout,1100,800);
         scene.getStylesheets().add(
                 getClass().getResource("/dashboard.css").toExternalForm()
         );
