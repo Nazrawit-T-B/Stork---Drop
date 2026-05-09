@@ -1,4 +1,5 @@
-# Distributed-File-Sharing-System-mini-drop-box-
+# Stork---Drop
+
 # MiniStork
  This repository is currently under development. Documentation and features are being actively worked on.
 
