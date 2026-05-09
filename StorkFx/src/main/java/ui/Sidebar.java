@@ -93,6 +93,8 @@ public class Sidebar {
         btnPermission.setGraphic(permissionIcon);
         btnPermission.getStyleClass().add("nav-button");
 
+        btnPermission.setOnAction(e-> root.setCenter(Permissions.permissionsPage()));
+
         ToggleButton btnHistory = new ToggleButton("History");
         FontIcon historyIcon = new FontIcon("mdi2r-refresh");
         historyIcon.setIconSize(20);
@@ -100,6 +102,8 @@ public class Sidebar {
         btnHistory.setToggleGroup(group);
         btnHistory.setGraphic(historyIcon);
         btnHistory.getStyleClass().add("nav-button");
+
+        btnHistory.setOnAction(e-> root.setCenter(History.historyPage()));
 
 
         VBox storageCard = createStorageCard();
