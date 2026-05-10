@@ -7,14 +7,18 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import static ui.Dashboard.*;
+import static ui.Dashboard.SyncActivity;
+import static ui.Dashboard.activeStat;
+import static ui.Dashboard.createSysHealth;
+import static ui.Dashboard.recent;
+import static ui.Dashboard.transfers;
 import static ui.Sidebar.createsidebar;
 
 public class Stork extends Application{
     BorderPane root=new BorderPane();
     StackPane layout=new StackPane();
 
+    @Override
     public void start(Stage stage){
         root.setLeft(createsidebar(root));
 
