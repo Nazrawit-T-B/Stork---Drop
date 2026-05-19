@@ -12,17 +12,15 @@ Explain:
 - Who it is for
 
 ## 🛠️ Tech Stack
-- Language(s): Java, Js
-- Framework(s): Springboot
-- Tools & Libraries: 
+- Language(s): Java
+- Framework(s): Springboot, JavaFx
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 List any requirements:
 - Java basics
-- Database (if any)
-- html, Css
+- Database 
 
 ### Installation
 ```bash
