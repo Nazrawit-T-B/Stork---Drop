@@ -24,12 +24,5 @@ List any requirements:
 
 ### Installation
 ```bash
-# Clone the repo
-git clone https://github.com/your-username/your-repo.git
+#Clone the repo
 
-# Navigate into the folder
-cd your-repo
-
-# Install dependencies
-# (example)
-npm install
