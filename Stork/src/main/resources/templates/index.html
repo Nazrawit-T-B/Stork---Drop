@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+
+    </title>
+    <link rel="stylesheet" href="static/header.css">
+</head>
+<body>
+
+    <div id="header"></div>
+
+    <script>
+        fetch('header.html')
+    .then(res => res.text())
+    .then(data => document.getElementById("header").innerHTML = data);
+    </script>
+    <div class="Welcome message">
+        <h1>Welcome back </h1>
+         <P>manage your workspace and collaborate in real time </P>
+    </div>
+    <div class="recent-files-title">
+        <h3>Recent Files </h3>
+        <a href="">view all</a>
+    </div>
+    <div class="recent-files-container">
+        <!-- Box container containing all the recent files accessed-->
+        <div class="file">
+            <p>This is where the name of the file is going to be at</p>
+        </div>
+        <div class="file"> </div>
+        <div class="file"> </div>
+    </div>
+    <div class="search-and-all-files">
+        <p>All Files</p>
+        <div class="search-and-filter-icons">
+            <input type="text" id="files" />
+            <p>filter</p>
+            <p>change file view</p>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Last Modified</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>📁 Marketing Assets</td>
+                <td>--</td>
+                <td>Oct 12, 2023</td>
+                <td>⋮</td>
+            </tr>
+
+            <tr>
+                <td>📄 Client_Contract_v3.docx</td>
+                <td>1.2 MB</td>
+                <td>Oct 10, 2023</td>
+                <td>⋮</td>
+            </tr>
+
+            <tr>
+                <td>📄 Annual_Report_2023.pdf</td>
+                <td>14.5 MB</td>
+                <td>Oct 05, 2023</td>
+                <td>⋮</td>
+            </tr>
+
+            <tr>
+                <td>🖼️ Logo_Construction.svg</td>
+                <td>450 KB</td>
+                <td>Sep 28, 2023</td>
+                <td>⋮</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
