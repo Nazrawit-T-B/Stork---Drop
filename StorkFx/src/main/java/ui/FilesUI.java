@@ -6,8 +6,15 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.kordamp.ikonli.javafx.FontIcon;
+import service.FileTransferService;
 
+
+import java.io.File;
 import java.util.Stack;
 
 
@@ -46,7 +53,6 @@ public class FilesUI {
         searchBox.getStyleClass().add("search-box");
         searchBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Notification bell
         FontIcon bellIcon = new FontIcon("fas-bell");
         bellIcon.getStyleClass().add("notif-icon");
 
@@ -70,17 +76,17 @@ public class FilesUI {
        HBox recentfiles=new HBox(400);
        recentfiles.setAlignment(Pos.CENTER_LEFT);
        Label filelabel=new Label("Recent Files");
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        //Region spacer = new Region();
+        //HBox.setHgrow(spacer, Priority.ALWAYS);
        Hyperlink link=new Hyperlink("View all");
-       recentfiles.getChildren().addAll(filelabel,spacer,link);
+       recentfiles.getChildren().addAll(filelabel,link);
 
        HBox allfiles=new HBox();
        Label afileslabel=new Label("All Files");
        allfiles.getChildren().addAll(afileslabel);
 
         TableView<FileEntry> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        //table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<FileEntry, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(cell -> cell.getValue().nameProperty());
@@ -95,13 +101,43 @@ public class FilesUI {
         actionCol.setCellValueFactory(cell -> cell.getValue().actionProperty());
 
         table.getColumns().addAll(nameCol, sizeCol, modifiedCol, actionCol);
-        VBox.setVgrow(table, Priority.ALWAYS);
+        //VBox.setVgrow(table, Priority.ALWAYS);
+
+        Button upload=Upload();
+        HBox buttonBox=new HBox();
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        buttonBox.getChildren().add(upload);
 
 
-
-        main.getChildren().addAll(welcome,desc,recentfiles,allfiles,table);
+        main.getChildren().addAll(welcome,desc,recentfiles,allfiles,table,buttonBox);
 
         return main;
+    }
+    public static Button Upload(){
+        FontIcon uploadicon=new FontIcon("fas-upload");
+        uploadicon.setIconSize(16);
+        uploadicon.setIconColor(Color.WHITE);
+
+        Button upload = new Button("Upload", uploadicon);
+        upload.setPadding(new Insets(10,20,10,20));
+        upload.getStyleClass().add("upload-btn");
+        upload.setAlignment(Pos.BASELINE_LEFT);
+        upload.setOnAction(e->{
+            FileTransferService service=new FileTransferService();
+            try{
+                FileChooser fileChooser=new FileChooser();
+                Stage stage = null;
+                File file= fileChooser.showOpenDialog(stage);
+                if (file!=null){
+                    service.uploadFileToServer(file);
+                }
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
+
+        });
+        
+        return upload;
     }
 
 }

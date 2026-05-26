@@ -19,7 +19,6 @@
     -fx-font-weight: bold;
 }
 
-/* ── NAV BUTTONS ──────────────────────────── */
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: #94A3B8;
@@ -40,14 +39,12 @@
     -fx-text-fill: #CBD5E1;
 }
 
-/* Selected / active nav item */
 .nav-button:selected {
     -fx-background-color: #1D4ED8;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
-/* Icon color inside nav buttons */
 .nav-button .ikonli-font-icon {
     -fx-icon-color: #94A3B8;
 }
@@ -60,7 +57,6 @@
     -fx-icon-color: white;
 }
 
-/* ── STORAGE CARD ─────────────────────────── */
 .storage-card {
     -fx-background-color: #1A2A40;
     -fx-background-radius: 12;
@@ -107,7 +103,6 @@
     -fx-text-fill: #60A5FA;
 }
 
-/* ── PROMO CARD ───────────────────────────── */
 .promo-card {
     -fx-background-color: #1A2A40;
     -fx-background-radius: 12;
@@ -144,7 +139,6 @@
     -fx-text-fill: #60A5FA;
 }
 
-/* ── PROFILE SECTION ──────────────────────── */
 .profile-box {
     -fx-alignment: CENTER_LEFT;
     -fx-spacing: 12;
@@ -169,7 +163,6 @@
     -fx-font-size: 10;
 }
 
-/* ── MAIN CONTENT AREA ────────────────────── */
 .main-content {
     -fx-background-color: #F1F5F9;
     -fx-padding: 28 28 28 32;
@@ -182,7 +175,6 @@
     -fx-text-fill: #0F172A;
 }
 
-/* ── CARDS (general white card) ───────────── */
 .card {
     -fx-background-color: white;
     -fx-background-radius: 14;
@@ -201,7 +193,6 @@
     -fx-text-fill: #64748B;
 }
 
-/* ── SYSTEM HEALTH CARD ───────────────────── */
 .health-status-ok {
     -fx-text-fill: #10B981;
     -fx-font-size: 12;
@@ -239,7 +230,6 @@
     -fx-background-insets: 0;
 }
 
-/* ── ACTIVE TRANSFERS CARD (blue) ─────────── */
 .transfers-highlight-card {
     -fx-background-color: #2D7FF9;
     -fx-background-radius: 14;
@@ -279,7 +269,6 @@
     -fx-background-color: rgba(255,255,255,0.15);
 }
 
-/* ── TRANSFER ROW ITEMS ───────────────────── */
 .transfer-row {
     -fx-background-color: white;
     -fx-background-radius: 10;
@@ -333,14 +322,14 @@
     -fx-text-fill: #EF4444;
 }
 
-/* ── SECTION HEADERS ──────────────────────── */
+
 .section-title {
     -fx-font-size: 15;
     -fx-font-weight: bold;
     -fx-text-fill: #0F172A;
 }
 
-/* ── PAUSE ALL BUTTON ─────────────────────── */
+
 .btn-pause {
     -fx-background-color: white;
     -fx-border-color: #E2E8F0;
@@ -358,7 +347,7 @@
     -fx-border-color: #CBD5E1;
 }
 
-/* ── VIEW ALL LINK ────────────────────────── */
+
 .view-all-link {
     -fx-text-fill: #2D7FF9;
     -fx-font-size: 13;
@@ -370,7 +359,7 @@
     -fx-text-fill: #1D4ED8;
 }
 
-/* ── RECENT ACTIVITY ROWS ─────────────────── */
+
 .activity-row {
     -fx-spacing: 12;
     -fx-alignment: CENTER_LEFT;

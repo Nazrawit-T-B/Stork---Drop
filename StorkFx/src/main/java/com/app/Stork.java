@@ -35,8 +35,9 @@ public class Stork extends Application{
         root.setCenter(mainArea);
         layout.getChildren().add(root);
         Scene scene=new Scene(layout,1100,800);
-        scene.getStylesheets().add(
-                getClass().getResource("/dashboard.css").toExternalForm()
+        scene.getStylesheets().addAll(
+                getClass().getResource("/dashboard.css").toExternalForm(),
+                getClass().getResource("/files.css").toExternalForm()
         );
         stage.setResizable(true);
         stage.setScene(scene);

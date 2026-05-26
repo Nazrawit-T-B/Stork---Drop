@@ -11,8 +11,7 @@ import javafx.scene.shape.Circle;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import static ui.Dashboard.*;
-import static ui.FilesUI.Area;
-import static ui.FilesUI.FilesHeader;
+import static ui.FilesUI.*;
 
 
 public class Sidebar {

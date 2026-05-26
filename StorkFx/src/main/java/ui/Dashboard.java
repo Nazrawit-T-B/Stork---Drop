@@ -45,7 +45,6 @@ public class Dashboard {
         return header;
     }
 
-    // ── SYSTEM HEALTH CARD ─────────────────────────────────────
     public static VBox createSysHealth() {
         VBox component = new VBox(16);
         component.getStyleClass().addAll("card", "health-card");
@@ -127,7 +126,7 @@ public class Dashboard {
         Label descLabel = new Label("Files currently syncing");
         descLabel.getStyleClass().add("transfers-sub");
 
-        Button viewBtn = new Button("View all transfers  →");
+        Button viewBtn = new Button("View all transfers");
         viewBtn.getStyleClass().add("btn-view-transfers");
 
         content.getChildren().addAll(topRow, countLabel, descLabel, viewBtn);
