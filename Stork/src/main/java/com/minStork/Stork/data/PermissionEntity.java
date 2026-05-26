@@ -2,15 +2,21 @@ package com.minStork.Stork.data;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "permissions")
+@Table(name = "permissions", 
+        uniqueConstraints={
+        @UniqueConstraint(columnNames={"user_id", "file_id"})
+    })
 public class PermissionEntity {
 
     @Id
@@ -18,8 +24,9 @@ public class PermissionEntity {
     private Long id;
 
     // READ, WRITE, OWNER
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String permissionType;
+    private PermissionType permissionType;
 
     // Many permissions belong to one user
     @ManyToOne
@@ -31,22 +38,20 @@ public class PermissionEntity {
     @JoinColumn(name = "file_id", nullable = false)
     private FileEntity file;
 
-    // ===== Constructors =====
 
     public PermissionEntity() {
     }
 
-    // ===== Getters and Setters =====
 
     public Long getId() {
         return id;
     }
 
-    public String getPermissionType() {
+    public PermissionType getPermissionType() {
         return permissionType;
     }
 
-    public void setPermissionType(String permissionType) {
+    public void setPermissionType(PermissionType permissionType) {
         this.permissionType = permissionType;
     }
 

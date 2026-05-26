@@ -1,26 +1,25 @@
 package com.minStork.Stork.controller;
 
-import com.minStork.Stork.data.PermissionEntity;
-import com.minStork.Stork.data.PermissionRepository;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.annotation.AccessType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.security.core.Authentication;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.minStork.Stork.data.PermissionRepository;
 
 @RestController
 public class FileController {
@@ -51,10 +50,12 @@ public class FileController {
                     .map(a -> a.getAuthority().replace("ROLE_", "").toLowerCase())
                     .findFirst()
                     .orElse("");
-            PermissionEntity permission=permissionRepository.findByFilename(filename).orElse(null);
+            /* TO BE FIXED
+            PermissionEntity permission=permissionRepository.findByUserAndFile(filename).orElse(null);
             if (permission == null || !permission.getAllowedRolesAsList().contains(userRole)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
+            */
             var fileToDownload= fileStorageService.getDownloadFile(filename);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+ filename+"\"")
