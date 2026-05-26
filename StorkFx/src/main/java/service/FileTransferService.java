@@ -20,14 +20,13 @@ public class FileTransferService {
         try (OutputStream outputStream = connection.getOutputStream();
              PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true)) {
 
-            // ---- File part header
             writer.append("--").append(boundary).append("\r\n");
             writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"")
                     .append(file.getName()).append("\"\r\n");
             writer.append("Content-Type: application/octet-stream\r\n\r\n");
             writer.flush();
 
-            // ---- File content
+
             Files.copy(file.toPath(), outputStream);
             outputStream.flush();
 
