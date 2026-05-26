@@ -17,7 +17,7 @@ import java.util.Objects;
 
 @Service
 public class FileStorageService {
-    private static final String STORAGE_DIR = "storage";
+    private static final String STORAGE_DIR = "Stork/storage";
     public void saveFile (MultipartFile incomingfile) throws IOException {
         if (incomingfile == null|| incomingfile.isEmpty()) {
                 throw new NullPointerException("No file to save!");
