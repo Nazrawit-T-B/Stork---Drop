@@ -1,6 +1,7 @@
 package ui;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -8,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -126,10 +128,22 @@ public class FilesUI {
             FileTransferService service=new FileTransferService();
             try{
                 FileChooser fileChooser=new FileChooser();
-                Stage stage = null;
+                Stage stage = (Stage) upload.getScene().getWindow();
                 File file= fileChooser.showOpenDialog(stage);
                 if (file!=null){
                     service.uploadFileToServer(file);
+                    Label l=new Label(service.response+ file.getName());
+                    l.setStyle("-fx-text-fill: white;");
+                    VBox card = new VBox(l);
+                    card.setPadding(new Insets(16, 24, 16, 24));
+                    card.setStyle("""
+                                -fx-background-color: #0F1B2D;
+                                -fx-background-radius: 8; 
+                            """);
+                    Popup popup=new Popup();
+                    popup.getContent().add(card);
+                    popup.setAutoHide(true);
+                    popup.show(stage);
                 }
             }catch(Exception ex){
                 ex.printStackTrace();

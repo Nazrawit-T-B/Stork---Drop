@@ -179,9 +179,10 @@ public class Dashboard {
         // Transfer rows
         VBox files = new VBox(8);
         files.getChildren().addAll(
+                /*
                 createTransferRow("04_Marketing_Campaign.mp4", "2.4 GB • 8 MB/s • 4m left", 0.60, "60%", "fas-film"),
                 createTransferRow("Project_Specs_V2.pdf",      "12.5 MB • 12 MB/s • 2s left", 0.85, "85%", "fas-file-pdf"),
-                createTransferRow("Hero_Section_Final_v1.png", "4.2 MB • Processing metadata...", 0.20, "20%", "fas-image")
+                createTransferRow("Hero_Section_Final_v1.png", "4.2 MB • Processing metadata...", 0.20, "20%", "fas-image")*/
         );
 
         Button viewAll = new Button("View all transfers  →");

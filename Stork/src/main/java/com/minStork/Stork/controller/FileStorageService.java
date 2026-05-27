@@ -16,11 +16,11 @@ import java.util.Objects;
 
 
 @Service
-public class FileStorageService {
+public class FileStorageService  {
     private static final String STORAGE_DIR = "Stork/storage";
     public void saveFile (MultipartFile incomingfile) throws IOException {
         if (incomingfile == null|| incomingfile.isEmpty()) {
-                throw new NullPointerException("No file to save!");
+            throw new NullPointerException("No file to save!");
         }
         File dir = new File(STORAGE_DIR);
         if (!dir.exists()) {
@@ -28,11 +28,11 @@ public class FileStorageService {
         }
         var targetFile = new File(STORAGE_DIR + File.separator + incomingfile.getOriginalFilename());
 
-        if (!Objects.equals(targetFile.getParent(), STORAGE_DIR)) {
+        /*if (!Objects.equals(targetFile.getParent(), STORAGE_DIR)) {
                 throw new SecurityException("Unsupported filename");
-        }
+        }*/
         Files.copy(incomingfile.getInputStream(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
+    }
     public File getDownloadFile(String filename) throws Exception {
         if(filename==null){
             throw new NullPointerException("Filename is null");
@@ -40,7 +40,7 @@ public class FileStorageService {
         var fileToDownload=new File(STORAGE_DIR+File.separator+filename);
 
         if (!Objects.equals(fileToDownload.getParent(), STORAGE_DIR)) {
-                throw new SecurityException("Unsupported filename");
+            throw new SecurityException("Unsupported filename");
         }
         if(!fileToDownload.exists()){
             throw new FileNotFoundException("File does not exist");
@@ -48,5 +48,6 @@ public class FileStorageService {
         return fileToDownload;
 
     }
+
 
 }

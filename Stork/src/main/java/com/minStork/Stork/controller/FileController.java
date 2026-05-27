@@ -6,13 +6,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+//import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,21 +32,25 @@ public class FileController {
 
     private static final Logger log=Logger.getLogger(FileController.class.getName());
     @PostMapping("/file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, Authentication auth){
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file/*Authentication auth*/){
         try{
+            /*
             if(auth ==null || !auth.isAuthenticated()){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
-            }
+            }*/
             fileStorageService.saveFile(file);
             return ResponseEntity.ok("Uploaded: "+file.getOriginalFilename());
+            //add exsisting file logic for replace
         }catch(IOException e){
             log.log(Level.SEVERE,"Error during upload",e);
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
+       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
+
     }
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename, Authentication auth) {
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename /* Authentication auth*/) {
         try{
+            /*
             String userRole = auth.getAuthorities().stream()
                     .map(a -> a.getAuthority().replace("ROLE_", "").toLowerCase())
                     .findFirst()
@@ -61,7 +66,7 @@ public class FileController {
                     .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+ filename+"\"")
                     .contentLength(fileToDownload.length())
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(new InputStreamResource(Files.newInputStream(fileToDownload.toPath())));
+                    .body(new FileSystemResource(fileToDownload));
         }catch(Exception e){
             return ResponseEntity.notFound().build();
             //throw new RuntimeException(e);

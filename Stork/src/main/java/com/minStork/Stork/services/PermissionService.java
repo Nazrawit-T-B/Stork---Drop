@@ -7,7 +7,9 @@ import com.minStork.Stork.data.UserEntity;
 import com.minStork.Stork.data.FileEntity;
 import com.minStork.Stork.data.PermissionEntity;
 import com.minStork.Stork.data.PermissionType;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PermissionService {
     
     @Autowired

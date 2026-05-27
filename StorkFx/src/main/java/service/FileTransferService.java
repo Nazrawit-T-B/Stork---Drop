@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 
 public class FileTransferService {
+    public String response="";
     public void uploadFileToServer(File file) throws IOException {
 
         String boundary = "----JavaFXBoundary" + System.currentTimeMillis();
@@ -36,6 +37,12 @@ public class FileTransferService {
         }
 
         int responseCode = connection.getResponseCode();
+
+        if(responseCode==200){
+            response="File Uploaded:- ";
+        }else{
+            response="Couldn't upload file!";
+        }
         System.out.println("Response: " + responseCode);
     }
 }
