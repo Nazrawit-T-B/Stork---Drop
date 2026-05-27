@@ -18,7 +18,6 @@ public class Dashboard {
         Label label = new Label("Sync & Activity");
         label.getStyleClass().add("page-title");
 
-        // Search field with icon
         TextField search = new TextField();
         search.setPromptText("Search files or activity...");
         search.getStyleClass().add("search-field");
@@ -30,7 +29,6 @@ public class Dashboard {
         searchBox.getStyleClass().add("search-box");
         searchBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Notification bell
         FontIcon bellIcon = new FontIcon("fas-bell");
         bellIcon.getStyleClass().add("notif-icon");
 
@@ -50,7 +48,6 @@ public class Dashboard {
         component.getStyleClass().addAll("card", "health-card");
         component.setPadding(new Insets(20));
 
-        // Top row: icon + labels
         HBox topBar = new HBox(14);
         topBar.setAlignment(Pos.CENTER_LEFT);
 
@@ -66,7 +63,6 @@ public class Dashboard {
         HBox subRow = new HBox(8);
         subRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Green dot
         Label dot = new Label("●");
         dot.setStyle("-fx-text-fill: #10B981; -fx-font-size: 10;");
 
@@ -83,7 +79,6 @@ public class Dashboard {
         topLabels.getChildren().addAll(title, subRow);
         topBar.getChildren().addAll(iconView, topLabels);
 
-        // Bottom row: storage usage
         HBox storageRow = new HBox();
         storageRow.setAlignment(Pos.CENTER_LEFT);
         storageRow.setSpacing(8);
@@ -131,7 +126,6 @@ public class Dashboard {
 
         content.getChildren().addAll(topRow, countLabel, descLabel, viewBtn);
 
-        // Image pinned to top-right corner
         Image image = new Image(Sidebar.class.getResourceAsStream("/img_2.png"));
         ImageView view = new ImageView(image);
         view.setFitWidth(100);
@@ -141,24 +135,21 @@ public class Dashboard {
         StackPane.setAlignment(view, Pos.TOP_RIGHT);
         StackPane.setMargin(view, new Insets(10, 10, 0, 0));
 
-        // Layer image behind content
         StackPane card = new StackPane(view, content);
         card.getStyleClass().add("transfers-highlight-card");
         StackPane.setAlignment(content, Pos.TOP_LEFT);
 
-        // Wrap in VBox so return type stays VBox
         VBox wrapper = new VBox(card);
         VBox.setVgrow(card, Priority.ALWAYS);
         return wrapper;
     }
 
-    // ── ACTIVE TRANSFERS LIST CARD ──────────────────────────────
+    
     public static VBox transfers() {
         VBox component = new VBox(12);
         component.getStyleClass().add("card");
         component.setPadding(new Insets(20));
 
-        // Header row
         HBox titleRow = new HBox();
         titleRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -175,8 +166,7 @@ public class Dashboard {
         actionBtn.getStyleClass().add("btn-pause");
 
         titleRow.getChildren().addAll(desc, spacer, actionBtn);
-
-        // Transfer rows
+        
         VBox files = new VBox(8);
         files.getChildren().addAll(
                 createTransferRow("04_Marketing_Campaign.mp4", "2.4 GB • 8 MB/s • 4m left", 0.60, "60%", "fas-film"),
@@ -235,13 +225,12 @@ public class Dashboard {
         card.getStyleClass().add("card");
         card.setPadding(new Insets(20));
 
-        // Header row
         HBox topRow = new HBox();
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         Label title = new Label("Recent Activity");
         title.getStyleClass().add("section-title");
-
+        
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -271,7 +260,7 @@ public class Dashboard {
         return card;
     }
 
-    // Helper: single activity row
+    
     private static HBox createActivityRow(String iconLiteral, String iconColor,
                                           String actor, String action,
                                           String link, String time) {
@@ -288,8 +277,7 @@ public class Dashboard {
 
         HBox textRow = new HBox(4);
         textRow.setAlignment(Pos.CENTER_LEFT);
-        //textRow.setWrapLength(300);
-
+        
         Label actorLabel = new Label(actor);
         actorLabel.getStyleClass().add("activity-actor");
 
@@ -310,5 +298,25 @@ public class Dashboard {
         textBox.getChildren().addAll(textRow, timeLabel);
         row.getChildren().addAll(icon, textBox);
         return row;
+    }
+    public static BorderPane createDashboard() {
+        BorderPane root = new BorderPane();
+
+        VBox sidebar = Sidebar.createsidebar(root);
+        root.setLeft(sidebar);
+
+        BorderPane mainArea = new BorderPane();
+        mainArea.setTop(SyncActivity());
+        VBox leftComponent = new VBox(10);
+        leftComponent.getChildren().addAll(createSysHealth(), transfers());
+        VBox rightComponent = new VBox(10);
+        rightComponent.getChildren().addAll(activeStat(), recent());
+
+        mainArea.setLeft(leftComponent);
+        mainArea.setRight(rightComponent);
+        mainArea.setPadding(new Insets(24, 24, 24, 24));
+        root.setCenter(mainArea);
+
+        return root;
     }
 }
