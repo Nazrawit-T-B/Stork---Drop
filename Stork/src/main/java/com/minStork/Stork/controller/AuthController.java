@@ -1,6 +1,6 @@
 package com.minStork.Stork.controller;
 
-import com.minStork.Stork.service.AuthService;
+import com.minStork.Stork.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
