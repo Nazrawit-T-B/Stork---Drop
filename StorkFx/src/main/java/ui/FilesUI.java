@@ -21,6 +21,7 @@ import java.util.Stack;
 
 
 public class FilesUI {
+    public static TableView<FileEntry> table = new TableView<>();
     public static class FileEntry {
         private final SimpleStringProperty name;
         private final SimpleStringProperty size;
@@ -87,8 +88,9 @@ public class FilesUI {
        Label afileslabel=new Label("All Files");
        allfiles.getChildren().addAll(afileslabel);
 
-        TableView<FileEntry> table = new TableView<>();
-        //table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
 
         TableColumn<FileEntry, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(cell -> cell.getValue().nameProperty());
@@ -116,11 +118,12 @@ public class FilesUI {
         return main;
     }
     public static Button Upload(){
-        FontIcon uploadicon=new FontIcon("fas-upload");
-        uploadicon.setIconSize(16);
+        FontIcon uploadicon=new FontIcon("fas-plus");
+        uploadicon.setIconSize(20);
         uploadicon.setIconColor(Color.WHITE);
 
-        Button upload = new Button("Upload", uploadicon);
+        Button upload = new Button();
+        upload.setGraphic(uploadicon);
         upload.setPadding(new Insets(10,20,10,20));
         upload.getStyleClass().add("upload-btn");
         upload.setAlignment(Pos.BASELINE_LEFT);
@@ -135,7 +138,7 @@ public class FilesUI {
                     Label l=new Label(service.response+ file.getName());
                     l.setStyle("-fx-text-fill: white;");
                     VBox card = new VBox(l);
-                    card.setPadding(new Insets(16, 24, 16, 24));
+                    card.setPadding(new Insets(16, 16, 16, 16));
                     card.setStyle("""
                                 -fx-background-color: #0F1B2D;
                                 -fx-background-radius: 8; 
@@ -144,6 +147,9 @@ public class FilesUI {
                     popup.getContent().add(card);
                     popup.setAutoHide(true);
                     popup.show(stage);
+
+                    FileEntry entry=new FileEntry(file.getName(),file.length()+"bytes",new java.util.Date(file.lastModified()).toString(),"Download");
+                    table.getItems().add(entry);
                 }
             }catch(Exception ex){
                 ex.printStackTrace();

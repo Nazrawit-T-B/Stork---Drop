@@ -2,11 +2,11 @@ package com.minStork.Stork.controller;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.minStork.Stork.data.PermissionEntity;
-import com.minStork.Stork.data.UserEntity;
+import com.minStork.Stork.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.minStork.Stork.data.PermissionRepository;
 
 @RestController
 public class FileController {
@@ -74,6 +72,12 @@ public class FileController {
             //throw new RuntimeException(e);
         }
 
+    }
+    @Autowired
+    private FileRepository fileRepository;
+    @GetMapping("/files")
+    public ResponseEntity<List<FileEntity>> getAllFiles(){
+        return ResponseEntity.ok(fileRepository.findAll());
     }
 
 

@@ -41,7 +41,7 @@ public class FileTransferService {
         if(responseCode==200){
             response="File Uploaded:- ";
         }else{
-            response="Couldn't upload file!";
+            response="Response"+responseCode;
         }
         System.out.println("Response: " + responseCode);
     }
