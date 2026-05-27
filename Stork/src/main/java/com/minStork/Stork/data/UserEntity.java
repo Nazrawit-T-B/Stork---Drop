@@ -20,6 +20,9 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String fullName;
+
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
@@ -32,7 +35,6 @@ public class UserEntity {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // One user can own many files
     @OneToMany(mappedBy = "owner")
     private List<FileEntity> ownedFiles = new ArrayList<>();
 
@@ -40,19 +42,24 @@ public class UserEntity {
     @OneToMany(mappedBy = "uploadedBy")
     private List<FileVersionEntity> uploadedVersions = new ArrayList<>();
 
-    // One user can have many permissions
+    
     @OneToMany(mappedBy = "user")
     private List<PermissionEntity> permissions = new ArrayList<>();
-
-    // ===== Constructors =====
 
     public UserEntity() {
     }
 
-    // ===== Getters and Setters =====
 
     public Long getId() {
         return id;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getUsername() {
