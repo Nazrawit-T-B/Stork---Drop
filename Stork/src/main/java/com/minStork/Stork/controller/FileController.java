@@ -32,12 +32,12 @@ public class FileController {
 
     private static final Logger log=Logger.getLogger(FileController.class.getName());
     @PostMapping("/file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file/*Authentication auth*/){
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,Authentication auth){
         try{
-            /*
+
             if(auth ==null || !auth.isAuthenticated()){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
-            }*/
+            }
             fileStorageService.saveFile(file);
             return ResponseEntity.ok("Uploaded: "+file.getOriginalFilename());
             //add exsisting file logic for replace
@@ -48,14 +48,14 @@ public class FileController {
 
     }
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename /*Authentication auth*/) {
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename ,Authentication auth) {
         try{
-            /*
+
             String userRole = auth.getAuthorities().stream()
                     .map(a -> a.getAuthority().replace("ROLE_", "").toLowerCase())
                     .findFirst()
                     .orElse("");
-
+/*
             PermissionEntity permission=permissionRepository.findByUserAndFile(filename).orElse(null);
             if (permission == null || !permission.getAllowedRolesAsList().contains(userRole)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

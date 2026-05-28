@@ -7,6 +7,7 @@ import java.nio.file.Files;
 
 public class FileTransferService {
     public String response="";
+
     public void uploadFileToServer(File file) throws IOException {
 
         String boundary = "----JavaFXBoundary" + System.currentTimeMillis();
@@ -48,6 +49,7 @@ public class FileTransferService {
     public void downloadFromServer(String filename) throws IOException{
         URL url=new URL("http://localhost:8080/download?fileName="+ filename);
         HttpURLConnection connection=(HttpURLConnection) url.openConnection();
+
         connection.setRequestMethod("GET");
         try{
         int responseCode=connection.getResponseCode();

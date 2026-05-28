@@ -5,6 +5,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import service.FileTransferService;
+
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -80,6 +82,7 @@ public class LoginPage {
                     int responseCode = conn.getResponseCode();
 
                     if (responseCode == HttpURLConnection.HTTP_OK) {
+
                         StringBuilder response = new StringBuilder();
                         try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
                             String responseLine;

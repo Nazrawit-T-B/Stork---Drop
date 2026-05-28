@@ -12,6 +12,8 @@ import static ui.Dashboard.activeStat;
 //import static ui.Dashboard.createSysHealth;
 import static ui.Dashboard.recent;
 import static ui.Dashboard.transfers;
+import static ui.FilesUI.Area;
+import static ui.FilesUI.FilesHeader;
 import static ui.Sidebar.createsidebar;
 
 public class Stork extends Application{
@@ -23,15 +25,13 @@ public class Stork extends Application{
         root.setLeft(createsidebar(root));
 
         BorderPane mainArea=new BorderPane();
-        mainArea.setTop(SyncActivity());
+        mainArea.setTop(FilesHeader());
         VBox leftComponent=new VBox(10);
         leftComponent.getChildren().addAll(/*createSysHealth(),*/transfers());
         VBox rightComponent=new VBox(10);
         rightComponent.getChildren().addAll(activeStat(),recent());
-        mainArea.setLeft(leftComponent);
-        mainArea.setRight(rightComponent);
+        mainArea.setCenter(Area());
         mainArea.setPadding(new Insets(24, 24, 24, 24));
-
         root.setCenter(mainArea);
         layout.getChildren().add(root);
         Scene scene=new Scene(layout,1100,800);
@@ -41,6 +41,7 @@ public class Stork extends Application{
         );
         stage.setResizable(true);
         stage.setScene(scene);
+        stage.setTitle("Stork-Drop");
         stage.show();
     }
     public static void main(String[] args){

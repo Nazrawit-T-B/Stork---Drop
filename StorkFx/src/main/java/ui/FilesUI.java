@@ -72,7 +72,7 @@ public class FilesUI {
        VBox main=new VBox(20);
        main.setPadding(new Insets(24));
 
-       Label welcome=new Label("Welcome back,Alice");
+       Label welcome=new Label("Welcome");
        welcome.getStyleClass().add("welcome-label");
        Label desc=new Label("Manage your cloud workspace and collaborate in real-time");
        desc.getStyleClass().add("desc-label");

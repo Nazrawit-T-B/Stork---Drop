@@ -1,9 +1,16 @@
 package com.minStork.Stork.controller;
 
 import com.minStork.Stork.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.CachingUserDetailsService;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,10 +19,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     @Autowired
-    private AuthService authService; 
+    private AuthService authService;
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
             if (request.getIdentifier() == null || request.getIdentifier().trim().isEmpty() ||
                 request.getPassword() == null || request.getPassword().isEmpty()) {
@@ -28,6 +37,7 @@ public class AuthController {
             );
 
             if (loginSuccessful) {
+                
                 String fullName = "Miki Buzu"; 
                 String email = request.getIdentifier().contains("@") ? request.getIdentifier() : "miki@storkdrop.com";
                 

@@ -31,7 +31,7 @@
 }
 .welcome-label{
     -fx-font-size:20;
-    -fx-font-family:"Consolas";
+    -fx-font-family:"System";
 }
 .desc-label{
     -fx-font-size:12;

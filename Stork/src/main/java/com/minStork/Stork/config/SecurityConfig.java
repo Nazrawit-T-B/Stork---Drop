@@ -19,7 +19,7 @@ public class SecurityConfig {
             // 2. Allow anyone to hit the virtual auth routes (signup/login)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll() 
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
             );
 
         return http.build();

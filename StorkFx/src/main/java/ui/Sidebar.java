@@ -9,8 +9,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.kordamp.ikonli.javafx.FontIcon;
-
-import static ui.Dashboard.*;
 import static ui.FilesUI.*;
 
 public class Sidebar {
@@ -32,29 +30,8 @@ public class Sidebar {
 
         ToggleGroup group = new ToggleGroup();
 
-
-        ToggleButton btnSync = new ToggleButton("Sync & Activity");
-        FontIcon syncIcon = new FontIcon("mdi2h-home-outline");
-        syncIcon.setIconSize(20);
-        syncIcon.setIconColor(Color.WHITE);
-        btnSync.setToggleGroup(group);
-        btnSync.setSelected(true);
-        btnSync.setGraphic(syncIcon);
-        btnSync.getStyleClass().add("nav-button");
-        btnSync.setOnAction(e -> {
-            BorderPane mainArea = new BorderPane();
-            mainArea.setTop(SyncActivity());
-            VBox leftComponent = new VBox(10);
-            leftComponent.getChildren().addAll(/*createSysHealth(), */transfers());
-            VBox rightComponent = new VBox(10);
-            rightComponent.getChildren().addAll(activeStat(), recent());
-            mainArea.setLeft(leftComponent);
-            mainArea.setRight(rightComponent);
-            mainArea.setPadding(new Insets(24, 24, 24, 24));
-            root.setCenter(mainArea);
-        });
-
         ToggleButton btnFiles = new ToggleButton("Files");
+        btnFiles.setSelected(true);
         FontIcon filesIcon = new FontIcon("mdi2f-folder");
         filesIcon.setIconSize(20);
         filesIcon.setIconColor(Color.WHITE);
@@ -68,7 +45,7 @@ public class Sidebar {
             root.setCenter(mainArea);
         });
 
-        // 3. PERMISSIONS
+
         ToggleButton btnPermission = new ToggleButton("Permissions");
         FontIcon permissionIcon = new FontIcon("mdi2l-link-lock");
         permissionIcon.setIconSize(20);
@@ -78,7 +55,7 @@ public class Sidebar {
         btnPermission.getStyleClass().add("nav-button");
         btnPermission.setOnAction(e -> root.setCenter(Permissions.permissionsPage()));
 
-        // 4. HISTORY
+
         ToggleButton btnHistory = new ToggleButton("History");
         FontIcon historyIcon = new FontIcon("mdi2r-refresh");
         historyIcon.setIconSize(20);
@@ -88,7 +65,7 @@ public class Sidebar {
         btnHistory.getStyleClass().add("nav-button");
         btnHistory.setOnAction(e -> root.setCenter(History.historyPage()));
 
-        // 5. AUTHENTICATION SECTION (SIGN IN / LOGOUT TOGGLE)
+
         ToggleButton btnAuth = new ToggleButton();
         btnAuth.setToggleGroup(group);
         btnAuth.getStyleClass().add("nav-button");
@@ -98,7 +75,7 @@ public class Sidebar {
         authIcon.setIconColor(Color.WHITE);
         btnAuth.setGraphic(authIcon);
 
-        // REAL-TIME LISTENER: Runs automatically whenever someone logs in or logs out
+
         SessionManager.loggedInProperty().addListener((observable, wasLoggedIn, isLoggedIn) -> {
             if (isLoggedIn) {
                 btnAuth.setText("Logout");
@@ -117,7 +94,7 @@ public class Sidebar {
             }
         });
 
-        // Establish initial startup visibility state configuration parameters
+
         if (SessionManager.isLoggedIn()) {
             btnAuth.setText("Logout");
             authIcon.setIconCode(org.kordamp.ikonli.materialdesign2.MaterialDesignL.LOGOUT);
@@ -134,7 +111,6 @@ public class Sidebar {
             });
         }
 
-        // CARDS & CAROUSELS
         VBox storageCard = createStorageCard();
         VBox.setMargin(storageCard, new Insets(10, 0, 0, 0));
 
@@ -144,12 +120,11 @@ public class Sidebar {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        // 6. PROFILE SECTION
         HBox profile = createProfileSection();
         logo.getStyleClass().add("brand-label");
         
         sidebar.getChildren().addAll(
-            btnSync, btnFiles, btnPermission, btnHistory, btnAuth, 
+           btnFiles, btnPermission, btnHistory, btnAuth,
             storageCard, promoCard, spacer, profile
         );
         
@@ -173,7 +148,7 @@ public class Sidebar {
         Button learnMore = new Button("Learn more →"); learnMore.setStyle("-fx-background-color: transparent; -fx-text-fill: #94A3B8; -fx-font-size: 11;");
         promoText.getStyleClass().add("promo-card-text"); learnMore.getStyleClass().add("promo-learn-more");
         
-        // Modal logic snippet remaining structurally intact...
+
         learnMore.setOnAction(e -> {
             StackPane overlay = new StackPane(); overlay.setStyle("-fx-background-color: rgba(0,0,0,0.45);");
             VBox modal = new VBox(20); modal.setMaxWidth(400); modal.setMaxHeight(400); modal.getStyleClass().add("card"); modal.setPadding(new Insets(30));

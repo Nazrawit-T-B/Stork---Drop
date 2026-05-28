@@ -42,67 +42,6 @@ public class Dashboard {
 
         return header;
     }
-/*
-    public static VBox createSysHealth() {
-        VBox component = new VBox(16);
-        component.getStyleClass().addAll("card", "health-card");
-        component.setPadding(new Insets(20));
-
-        HBox topBar = new HBox(14);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-
-        Image icon = new Image(Dashboard.class.getResourceAsStream("/img_1.png"));
-        ImageView iconView = new ImageView(icon);
-        iconView.setFitWidth(48);
-        iconView.setPreserveRatio(true);
-
-        VBox topLabels = new VBox(4);
-        Label title = new Label("System Health");
-        title.getStyleClass().add("card-title");
-
-        HBox subRow = new HBox(8);
-        subRow.setAlignment(Pos.CENTER_LEFT);
-
-        Label dot = new Label("●");
-        dot.setStyle("-fx-text-fill: #10B981; -fx-font-size: 10;");
-
-        Label statLabel = new Label("All systems operational");
-        statLabel.getStyleClass().add("health-status-ok");
-
-        Label separator = new Label("•");
-        separator.getStyleClass().add("health-latency");
-
-        Label latencyLabel = new Label("12ms Latency");
-        latencyLabel.getStyleClass().add("health-latency");
-
-        subRow.getChildren().addAll(dot, statLabel, separator, latencyLabel);
-        topLabels.getChildren().addAll(title, subRow);
-        topBar.getChildren().addAll(iconView, topLabels);
-
-        HBox storageRow = new HBox();
-        storageRow.setAlignment(Pos.CENTER_LEFT);
-        storageRow.setSpacing(8);
-
-        Label storageLabel = new Label("42.8 GB of 100 GB used");
-        storageLabel.getStyleClass().add("health-storage-label");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Label pctLabel = new Label("42%");
-        pctLabel.getStyleClass().add("health-storage-pct");
-
-        storageRow.getChildren().addAll(storageLabel, spacer, pctLabel);
-
-        ProgressBar pb = new ProgressBar(0.42);
-        pb.setMaxWidth(Double.MAX_VALUE);
-        pb.setPrefHeight(6);
-
-        component.getChildren().addAll(topBar, storageRow, pb);
-        return component;
-    }
-
-*/
     public static VBox activeStat() {
 
         VBox content = new VBox(10);
@@ -307,13 +246,13 @@ public class Dashboard {
         root.setLeft(sidebar);
 
         BorderPane mainArea = new BorderPane();
-        mainArea.setTop(SyncActivity());
+        //mainArea.setTop(SyncActivity());
         VBox leftComponent = new VBox(10);
         leftComponent.getChildren().addAll(/*createSysHealth(),*/ transfers());
         VBox rightComponent = new VBox(10);
         rightComponent.getChildren().addAll(activeStat(), recent());
 
-        mainArea.setLeft(leftComponent);
+       // mainArea.setLeft(leftComponent);
         mainArea.setRight(rightComponent);
         mainArea.setPadding(new Insets(24, 24, 24, 24));
         root.setCenter(mainArea);
