@@ -17,11 +17,11 @@ import service.FileTransferService;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Stack;
 
 
 public class FilesUI {
-    public static TableView<FileEntry> table = new TableView<>();
     public static class FileEntry {
         private final SimpleStringProperty name;
         private final SimpleStringProperty size;
@@ -44,7 +44,6 @@ public class FilesUI {
         Label label = new Label("Files");
         label.getStyleClass().add("page-title");
 
-        // Search field with icon
         TextField search = new TextField();
         search.setPromptText("Search files or folders...");
         search.getStyleClass().add("search-field");
@@ -74,21 +73,17 @@ public class FilesUI {
        main.setPadding(new Insets(24));
 
        Label welcome=new Label("Welcome back,Alice");
+       welcome.getStyleClass().add("welcome-label");
        Label desc=new Label("Manage your cloud workspace and collaborate in real-time");
-
-       HBox recentfiles=new HBox(400);
-       recentfiles.setAlignment(Pos.CENTER_LEFT);
-       Label filelabel=new Label("Recent Files");
-        //Region spacer = new Region();
-        //HBox.setHgrow(spacer, Priority.ALWAYS);
-       Hyperlink link=new Hyperlink("View all");
-       recentfiles.getChildren().addAll(filelabel,link);
+       desc.getStyleClass().add("desc-label");
 
        HBox allfiles=new HBox();
+       allfiles.setPadding(new Insets(10,0,0,0));
        Label afileslabel=new Label("All Files");
+       afileslabel.getStyleClass().add("all-files-label");
        allfiles.getChildren().addAll(afileslabel);
 
-
+        TableView<FileEntry> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
 
@@ -101,23 +96,46 @@ public class FilesUI {
         TableColumn<FileEntry, String> modifiedCol = new TableColumn<>("Last Modified");
         modifiedCol.setCellValueFactory(cell -> cell.getValue().lastModifiedProperty());
 
-        TableColumn<FileEntry, String> actionCol = new TableColumn<>("Action");
-        actionCol.setCellValueFactory(cell -> cell.getValue().actionProperty());
+        TableColumn<FileEntry,String> actionCol = new TableColumn<>("Action");
+        actionCol.setCellFactory(col->new TableCell<>(){
+            private final Hyperlink link=new Hyperlink("Download");{
+                link.setOnAction(e -> {
+                    FileEntry entry = getTableView().getItems().get(getIndex());
+                    String filename=entry.nameProperty().get();
+                    FileTransferService service=new FileTransferService();
+                    try {
+                        service.downloadFromServer(filename);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getIndex() < 0) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(link);
+                }
+            }
+        });
 
         table.getColumns().addAll(nameCol, sizeCol, modifiedCol, actionCol);
-        //VBox.setVgrow(table, Priority.ALWAYS);
+        VBox.setVgrow(table, Priority.ALWAYS);
 
-        Button upload=Upload();
+        Button upload=Upload(table);
         HBox buttonBox=new HBox();
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.getChildren().add(upload);
 
 
-        main.getChildren().addAll(welcome,desc,recentfiles,allfiles,table,buttonBox);
+        main.getChildren().addAll(welcome,desc,allfiles,table,buttonBox);
 
         return main;
     }
-    public static Button Upload(){
+    public static Button Upload(TableView<FileEntry> table){
         FontIcon uploadicon=new FontIcon("fas-plus");
         uploadicon.setIconSize(20);
         uploadicon.setIconColor(Color.WHITE);

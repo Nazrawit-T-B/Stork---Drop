@@ -24,6 +24,21 @@
 .table-cell{
 }
 .table-row-cell:selected{
+    -fx-background-color:#0F1B2D;
+    -fx-text-fill:white;
+}
+.table-view .filler{
+}
+.welcome-label{
+    -fx-font-size:20;
+    -fx-font-family:"Consolas";
+}
+.desc-label{
+    -fx-font-size:12;
+    -fx-font-family:"Consolas";
+    -fx-padding:0,0,10,0;
+}
+.all-files-label{
+    -fx-font-size:16;
 
 }
-.table-view .filler{}

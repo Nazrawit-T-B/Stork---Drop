@@ -42,7 +42,7 @@ public class Dashboard {
 
         return header;
     }
-
+/*
     public static VBox createSysHealth() {
         VBox component = new VBox(16);
         component.getStyleClass().addAll("card", "health-card");
@@ -102,7 +102,7 @@ public class Dashboard {
         return component;
     }
 
-
+*/
     public static VBox activeStat() {
 
         VBox content = new VBox(10);
@@ -309,7 +309,7 @@ public class Dashboard {
         BorderPane mainArea = new BorderPane();
         mainArea.setTop(SyncActivity());
         VBox leftComponent = new VBox(10);
-        leftComponent.getChildren().addAll(createSysHealth(), transfers());
+        leftComponent.getChildren().addAll(/*createSysHealth(),*/ transfers());
         VBox rightComponent = new VBox(10);
         rightComponent.getChildren().addAll(activeStat(), recent());
 

@@ -32,7 +32,7 @@ public class Sidebar {
 
         ToggleGroup group = new ToggleGroup();
 
-        // 1. SYNC & ACTIVITY
+
         ToggleButton btnSync = new ToggleButton("Sync & Activity");
         FontIcon syncIcon = new FontIcon("mdi2h-home-outline");
         syncIcon.setIconSize(20);
@@ -45,7 +45,7 @@ public class Sidebar {
             BorderPane mainArea = new BorderPane();
             mainArea.setTop(SyncActivity());
             VBox leftComponent = new VBox(10);
-            leftComponent.getChildren().addAll(createSysHealth(), transfers());
+            leftComponent.getChildren().addAll(/*createSysHealth(), */transfers());
             VBox rightComponent = new VBox(10);
             rightComponent.getChildren().addAll(activeStat(), recent());
             mainArea.setLeft(leftComponent);
@@ -54,7 +54,6 @@ public class Sidebar {
             root.setCenter(mainArea);
         });
 
-        // 2. FILES
         ToggleButton btnFiles = new ToggleButton("Files");
         FontIcon filesIcon = new FontIcon("mdi2f-folder");
         filesIcon.setIconSize(20);

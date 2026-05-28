@@ -52,7 +52,7 @@ public class FileStorageService  {
         Files.copy(incomingfile.getInputStream(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         //add file metadata into the database
         //metadata's to be saved
-
+        /*
         Authentication auth= SecurityContextHolder.getContext().getAuthentication();
         String username=auth.getName();
         UserEntity user=userRepository.findByUsername(username).orElseThrow(()->new RuntimeException("User not found"));
@@ -65,7 +65,7 @@ public class FileStorageService  {
         fileEntity.setLastModified(LocalDateTime.now());
         fileEntity.setOwner(user);
 
-        fileRepository.save(fileEntity);
+        fileRepository.save(fileEntity);*/
     }
     public File getDownloadFile(String filename) throws Exception {
         if(filename==null){
@@ -73,9 +73,9 @@ public class FileStorageService  {
         }
         var fileToDownload=new File(STORAGE_DIR+File.separator+filename);
 
-        if (!Objects.equals(fileToDownload.getParent(), STORAGE_DIR)) {
+    /* if (!Objects.equals(fileToDownload.getParent(), STORAGE_DIR)) {
             throw new SecurityException("Unsupported filename");
-        }
+        }*/
         if(!fileToDownload.exists()){
             throw new FileNotFoundException("File does not exist");
         }

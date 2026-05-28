@@ -48,7 +48,7 @@ public class FileController {
 
     }
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename, Authentication auth) {
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename /*Authentication auth*/) {
         try{
             /*
             String userRole = auth.getAuthorities().stream()
@@ -62,13 +62,17 @@ public class FileController {
             }*/
 
             var fileToDownload= fileStorageService.getDownloadFile(filename);
+            System.out.println("Requested file: "+filename);
+            System.out.println("Resolved path: "+fileToDownload.getAbsolutePath());
+            System.out.println("Exists? "+ fileToDownload.exists());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+ filename+"\"")
                     .contentLength(fileToDownload.length())
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(new FileSystemResource(fileToDownload));
         }catch(Exception e){
-            return ResponseEntity.notFound().build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             //throw new RuntimeException(e);
         }
 

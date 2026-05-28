@@ -9,7 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import static ui.Dashboard.SyncActivity;
 import static ui.Dashboard.activeStat;
-import static ui.Dashboard.createSysHealth;
+//import static ui.Dashboard.createSysHealth;
 import static ui.Dashboard.recent;
 import static ui.Dashboard.transfers;
 import static ui.Sidebar.createsidebar;
@@ -25,7 +25,7 @@ public class Stork extends Application{
         BorderPane mainArea=new BorderPane();
         mainArea.setTop(SyncActivity());
         VBox leftComponent=new VBox(10);
-        leftComponent.getChildren().addAll(createSysHealth(),transfers());
+        leftComponent.getChildren().addAll(/*createSysHealth(),*/transfers());
         VBox rightComponent=new VBox(10);
         rightComponent.getChildren().addAll(activeStat(),recent());
         mainArea.setLeft(leftComponent);

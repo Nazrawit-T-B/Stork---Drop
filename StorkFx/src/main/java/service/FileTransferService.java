@@ -45,4 +45,36 @@ public class FileTransferService {
         }
         System.out.println("Response: " + responseCode);
     }
+    public void downloadFromServer(String filename) throws IOException{
+        URL url=new URL("http://localhost:8080/download?fileName="+ filename);
+        HttpURLConnection connection=(HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        try{
+        int responseCode=connection.getResponseCode();
+        if(responseCode==200){
+            InputStream in= connection.getInputStream();
+
+            String downloadsPath=System.getProperty("user.home")+File.separator+"Downloads";
+            File downloadsFolder=new File(downloadsPath);
+            if(!downloadsFolder.exists()){
+                downloadsFolder.mkdirs();
+            }
+            File outputFile=new File(downloadsFolder,filename);
+
+            try(FileOutputStream fos= new FileOutputStream(outputFile)){
+                byte [] buffer=new byte[4096];
+                int bytesRead;
+                while((bytesRead=in.read(buffer))!=-1){
+                    fos.write(buffer,0,bytesRead);
+                }
+            }
+            in.close();
+
+            response="Downloaded to : "+ outputFile.getAbsolutePath();
+        }else{
+            response="Download failed. Response code: " +responseCode;
+        }}finally{
+            connection.disconnect();
+        }
+    }
 }
