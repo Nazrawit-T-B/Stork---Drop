@@ -20,7 +20,6 @@ public class SignupPage {
         StackPane signupRoot = new StackPane();
         signupRoot.getStyleClass().add("login-root");
 
-        // LINKING THE STYLESHEET
         signupRoot.getStylesheets().add(SignupPage.class.getResource("/login.css").toExternalForm());
 
         VBox box = new VBox(20);
@@ -51,7 +50,6 @@ public class SignupPage {
         create.getStyleClass().add("login-btn");
         create.setMaxWidth(Double.MAX_VALUE);
 
-        // Label to show confirmation success messages or database constraint errors
         Label errorLabel = new Label();
         errorLabel.getStyleClass().add("error-msg");
         errorLabel.setStyle("-fx-text-fill: #EF4444;");
@@ -62,7 +60,6 @@ public class SignupPage {
             root.setCenter(LoginPage.createLoginPage(root));
         });
 
-        // Trigger Account Registration Database Check
         create.setOnAction(e -> {
             String fName = fullName.getText().trim();
             String uName = username.getText().trim();
@@ -88,7 +85,6 @@ public class SignupPage {
                     conn.setRequestProperty("Content-Type", "application/json; utf-8");
                     conn.setDoOutput(true);
 
-                    // Form raw JSON string safely passing along structural values
                     String jsonInputString = String.format(
                         "{\"fullName\": \"%s\", \"username\": \"%s\", \"email\": \"%s\", \"password\": \"%s\"}",
                         fName, uName, uEmail, uPassword
@@ -106,7 +102,6 @@ Platform.runLater(() -> {
         if (responseCode == HttpURLConnection.HTTP_OK) {
             root.setCenter(LoginPage.createLoginPage(root));
         } else {
-            // Check if there is an error stream to read from
             java.io.InputStream errorStream = conn.getErrorStream();
             if (errorStream != null) {
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
@@ -119,7 +114,6 @@ Platform.runLater(() -> {
                     errorLabel.setText(response.length() > 0 ? response.toString() : "Server Error: " + responseCode);
                 }
             } else {
-                // No stream available, print out the raw HTTP status code directly
                 errorLabel.setStyle("-fx-text-fill: #EF4444;");
                 errorLabel.setText("Server returned HTTP error status: " + responseCode);
             }
@@ -147,7 +141,7 @@ Platform.runLater(() -> {
                 email,
                 password,
                 create,
-                errorLabel, // Added to the visual container
+                errorLabel, 
                 backToLogin
         );
 
