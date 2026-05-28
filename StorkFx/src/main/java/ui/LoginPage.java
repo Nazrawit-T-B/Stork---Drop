@@ -17,8 +17,6 @@ public class LoginPage {
     public static StackPane createLoginPage(BorderPane root) {
         StackPane loginRoot = new StackPane();
         loginRoot.getStyleClass().add("login-root");
-
-        // LINKING THE STYLESHEET
         loginRoot.getStylesheets().add(LoginPage.class.getResource("/login.css").toExternalForm());
 
         VBox card = new VBox(20);
@@ -49,11 +47,8 @@ public class LoginPage {
 
         Hyperlink createAccount = new Hyperlink("Create Account");
         createAccount.getStyleClass().add("login-link");
-        createAccount.setOnAction(e -> {
-            root.setCenter(SignupPage.createSignupPage(root));
-        });
+        createAccount.setOnAction(e -> root.setCenter(SignupPage.createSignupPage(root)));
 
-        // Trigger Login validation logic block when clicked
         loginBtn.setOnAction(e -> {
             String input = userField.getText().trim();
             String password = passwordField.getText();
@@ -67,7 +62,6 @@ public class LoginPage {
             errorLabel.setText("Connecting to server...");
             loginBtn.setDisable(true);
 
-            // Execute network communication on a worker thread to keep the UI smooth
             new Thread(() -> {
                 try {
                     URL url = new URL("http://localhost:8080/api/auth/login");
@@ -76,7 +70,6 @@ public class LoginPage {
                     conn.setRequestProperty("Content-Type", "application/json; utf-8");
                     conn.setDoOutput(true);
 
-                    // Build raw JSON payload mapping cleanly to the LoginRequest class
                     String jsonInputString = String.format("{\"identifier\": \"%s\", \"password\": \"%s\"}", input, password);
 
                     try(OutputStream os = conn.getOutputStream()) {
@@ -86,60 +79,58 @@ public class LoginPage {
 
                     int responseCode = conn.getResponseCode();
 
-                    // Push mutations back to the main UI loop via runLater()
-                    Platform.runLater(() -> {
-                        loginBtn.setDisable(false);
-                        try {
-                            if (responseCode == HttpURLConnection.HTTP_OK) {
-                                // Session verified successfully! Set auth state and show dashboard
-                                // SessionManager.login();
-                                // SceneManager.showDashboard();
-                                errorLabel.setStyle("-fx-text-fill: #10B981;"); // Mint green success
-                                errorLabel.setText("Login successful!");
-            
-                            } else {
-                                java.io.InputStream errorStream = conn.getErrorStream();
-                                if (errorStream != null) {
-                                    try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
-                                        StringBuilder response = new StringBuilder();
-                                        String responseLine;
-                                        while ((responseLine = br.readLine()) != null) {
-                                            response.append(responseLine.trim());
-                                        }
-                                        errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                                        errorLabel.setText(response.length() > 0 ? response.toString() : "Unauthorized (" + responseCode + ")");
-                                    }
-                                } else {
-                                    errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                                    errorLabel.setText("Invalid username/email or password.");
-                                }
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        StringBuilder response = new StringBuilder();
+                        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                            String responseLine;
+                            while ((responseLine = br.readLine()) != null) {
+                                response.append(responseLine.trim());
                             }
-                        } catch (Exception ex) {
-                            errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                            errorLabel.setText("Error reading login response.");
                         }
-                    });
+
+                        String rawJson = response.toString();
+
+                        String finalName = input;
+                        String finalEmail = input.contains("@") ? input : input + "@storkdrop.com";
+
+                        if (rawJson.contains("\"username\"")) {
+                            finalName = rawJson.split("\"username\":\"")[1].split("\"")[0];
+                        } else if (rawJson.contains("\"name\"")) {
+                            finalName = rawJson.split("\"name\":\"")[1].split("\"")[0];
+                        }
+                        
+                        if (rawJson.contains("\"email\"")) {
+                            finalEmail = rawJson.split("\"email\":\"")[1].split("\"")[0];
+                        }
+
+                        SessionManager.login(finalName, finalEmail);
+
+                        Platform.runLater(() -> {
+                            loginBtn.setDisable(false);
+                            errorLabel.setStyle("-fx-text-fill: #10B981;");
+                            errorLabel.setText("Login successful!");
+                            
+                        });
+
+                    } else {
+                        Platform.runLater(() -> {
+                            loginBtn.setDisable(false);
+                            errorLabel.setStyle("-fx-text-fill: #EF4444;");
+                            errorLabel.setText("Invalid username/email or password.");
+                        });
+                    }
 
                 } catch (Exception ex) {
                     Platform.runLater(() -> {
                         loginBtn.setDisable(false);
                         errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                        errorLabel.setText("Cannot connect to Spring Boot back-end server.");
+                        errorLabel.setText("Cannot connect to backend server.");
                     });
                 }
             }).start();
         });
 
-        card.getChildren().addAll(
-                title,
-                subtitle,
-                userField,
-                passwordField,
-                loginBtn,
-                errorLabel,
-                createAccount
-        );
-
+        card.getChildren().addAll(title, subtitle, userField, passwordField, loginBtn, errorLabel, createAccount);
         loginRoot.getChildren().add(card);
         return loginRoot;
     }

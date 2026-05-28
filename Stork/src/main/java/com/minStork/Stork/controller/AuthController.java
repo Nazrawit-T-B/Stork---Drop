@@ -1,6 +1,6 @@
 package com.minStork.Stork.controller;
 
-import com.minStork.Stork.services.AuthService;
+import com.minStork.Stork.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,35 +14,59 @@ public class AuthController {
     @Autowired
     private AuthService authService; 
 
-   @PostMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         try {
-            // 1. Basic structural checks
-            if (request.getIdentifier() == null || request.getIdentifier().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Username or Email is required!");
-            }
-            if (request.getPassword() == null || request.getPassword().isEmpty()) {
-                return ResponseEntity.badRequest().body("Password is required!");
+            if (request.getIdentifier() == null || request.getIdentifier().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().isEmpty()) {
+                return ResponseEntity.badRequest().body("Fill all fields");
             }
 
-            // 2. Delegate to AuthService which uses encoder.matches()
             boolean loginSuccessful = authService.login(
                     request.getIdentifier().trim(), 
                     request.getPassword()
             );
 
             if (loginSuccessful) {
-                return ResponseEntity.ok("Login successful!");
+                String fullName = "Miki Buzu"; 
+                String email = request.getIdentifier().contains("@") ? request.getIdentifier() : "miki@storkdrop.com";
+                
+                String jsonResponse = String.format("{\"fullName\":\"%s\",\"email\":\"%s\"}", fullName, email);
+                return ResponseEntity.ok(jsonResponse);
             } else {
-                // Returns unauthorized status if password match fails or user isn't found
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Invalid username/email or password.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("ERROR: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<String> signup(@RequestBody SignupRequest request) {
+        try {
+            if (request.getFullName() == null || request.getFullName().trim().isEmpty() ||
+                request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+                request.getEmail() == null || request.getEmail().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().isEmpty()) {
+                
+                return ResponseEntity.badRequest().body("Please fill out all registration fields.");
+            }
+
+            boolean isRegistered = authService.register(
+                request.getFullName().trim(),
+                request.getUsername().trim(),
+                request.getEmail().trim(),
+                request.getPassword()
+            );
+            if (isRegistered) {
+                return ResponseEntity.ok("Account created successfully!");
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Username or Email is already taken.");
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing registration.");
         }
     }
 }
