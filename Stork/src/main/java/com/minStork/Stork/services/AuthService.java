@@ -1,4 +1,4 @@
-package com.minStork.Stork.services;
+package com.minStork.Stork.service;
 
 import com.minStork.Stork.data.UserEntity;
 import com.minStork.Stork.data.UserRepository;
