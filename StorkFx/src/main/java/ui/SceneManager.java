@@ -17,7 +17,6 @@ public class SceneManager {
     }
 
     public static void showLogin() {
-        
         javafx.scene.layout.BorderPane baseDashboard = Dashboard.createDashboard();
         baseDashboard.setCenter(LoginPage.createLoginPage(baseDashboard));
         
@@ -26,7 +25,6 @@ public class SceneManager {
     }
 
     public static void showSignup() {
-       
         javafx.scene.layout.BorderPane baseDashboard = Dashboard.createDashboard();
         baseDashboard.setCenter(SignupPage.createSignupPage(baseDashboard));
         
