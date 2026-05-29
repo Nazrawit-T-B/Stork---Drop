@@ -42,8 +42,67 @@ public class Dashboard {
 
         return header;
     }
-    public static VBox activeStat() {
 
+    public static VBox createSysHealth() {
+        VBox component = new VBox(16);
+        component.getStyleClass().addAll("card", "health-card");
+        component.setPadding(new Insets(20));
+
+        HBox topBar = new HBox(14);
+        topBar.setAlignment(Pos.CENTER_LEFT);
+
+        Image icon = new Image(Dashboard.class.getResourceAsStream("/img_1.png"));
+        ImageView iconView = new ImageView(icon);
+        iconView.setFitWidth(48);
+        iconView.setPreserveRatio(true);
+
+        VBox topLabels = new VBox(4);
+        Label title = new Label("System Health");
+        title.getStyleClass().add("card-title");
+
+        HBox subRow = new HBox(8);
+        subRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label dot = new Label("●");
+        dot.setStyle("-fx-text-fill: #10B981; -fx-font-size: 10;");
+
+        Label statLabel = new Label("All systems operational");
+        statLabel.getStyleClass().add("health-status-ok");
+
+        Label separator = new Label("•");
+        separator.getStyleClass().add("health-latency");
+
+        Label latencyLabel = new Label("12ms Latency");
+        latencyLabel.getStyleClass().add("health-latency");
+
+        subRow.getChildren().addAll(dot, statLabel, separator, latencyLabel);
+        topLabels.getChildren().addAll(title, subRow);
+        topBar.getChildren().addAll(iconView, topLabels);
+
+        HBox storageRow = new HBox();
+        storageRow.setAlignment(Pos.CENTER_LEFT);
+        storageRow.setSpacing(8);
+
+        Label storageLabel = new Label("42.8 GB of 100 GB used");
+        storageLabel.getStyleClass().add("health-storage-label");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label pctLabel = new Label("42%");
+        pctLabel.getStyleClass().add("health-storage-pct");
+
+        storageRow.getChildren().addAll(storageLabel, spacer, pctLabel);
+
+        ProgressBar pb = new ProgressBar(0.42);
+        pb.setMaxWidth(Double.MAX_VALUE);
+        pb.setPrefHeight(6);
+
+        component.getChildren().addAll(topBar, storageRow, pb);
+        return component;
+    }
+
+    public static VBox activeStat() {
         VBox content = new VBox(10);
         content.setPadding(new Insets(20));
 
@@ -83,7 +142,6 @@ public class Dashboard {
         return wrapper;
     }
 
-    
     public static VBox transfers() {
         VBox component = new VBox(12);
         component.getStyleClass().add("card");
@@ -107,12 +165,6 @@ public class Dashboard {
         titleRow.getChildren().addAll(desc, spacer, actionBtn);
         
         VBox files = new VBox(8);
-        files.getChildren().addAll(
-                /*
-                createTransferRow("04_Marketing_Campaign.mp4", "2.4 GB • 8 MB/s • 4m left", 0.60, "60%", "fas-film"),
-                createTransferRow("Project_Specs_V2.pdf",      "12.5 MB • 12 MB/s • 2s left", 0.85, "85%", "fas-file-pdf"),
-                createTransferRow("Hero_Section_Final_v1.png", "4.2 MB • Processing metadata...", 0.20, "20%", "fas-image")*/
-        );
 
         Button viewAll = new Button("View all transfers  →");
         viewAll.getStyleClass().add("view-all-link");
@@ -123,42 +175,6 @@ public class Dashboard {
         component.getChildren().addAll(titleRow, files, viewRow);
         return component;
     }
-
-
-    private static HBox createTransferRow(String name, String meta, double progress, String pct, String iconLiteral) {
-        HBox row = new HBox(12);
-        row.getStyleClass().add("transfer-row");
-        row.setAlignment(Pos.CENTER_LEFT);
-
-        FontIcon fileIcon = new FontIcon(iconLiteral);
-        fileIcon.setIconSize(20);
-        fileIcon.setStyle("-fx-icon-color: #2D7FF9;");
-
-        VBox info = new VBox(4);
-        HBox.setHgrow(info, Priority.ALWAYS);
-
-        Label nameLabel = new Label(name);
-        nameLabel.getStyleClass().add("transfer-filename");
-
-        Label metaLabel = new Label(meta);
-        metaLabel.getStyleClass().add("transfer-meta");
-
-        ProgressBar pb = new ProgressBar(progress);
-        pb.setMaxWidth(Double.MAX_VALUE);
-        pb.setPrefHeight(5);
-
-        info.getChildren().addAll(nameLabel, metaLabel, pb);
-
-        Label pctLabel = new Label(pct);
-        pctLabel.getStyleClass().add("transfer-pct");
-
-        Button cancelBtn = new Button("✕");
-        cancelBtn.getStyleClass().add("btn-cancel-transfer");
-
-        row.getChildren().addAll(fileIcon, info, pctLabel, cancelBtn);
-        return row;
-    }
-
 
     public static VBox recent() {
         VBox card = new VBox(14);
@@ -181,7 +197,6 @@ public class Dashboard {
 
         topRow.getChildren().addAll(title, spacer, filter);
 
-        // Activity rows
         VBox activities = new VBox(4);
         activities.getChildren().addAll(
                 createActivityRow("fas-file-alt",      "#2D7FF9", "Alice",   "updated",  "Report.docx",        "2 minutes ago"),
@@ -200,10 +215,7 @@ public class Dashboard {
         return card;
     }
 
-    
-    private static HBox createActivityRow(String iconLiteral, String iconColor,
-                                          String actor, String action,
-                                          String link, String time) {
+    private static HBox createActivityRow(String iconLiteral, String iconColor,String actor, String action,  String link, String time) {
         HBox row = new HBox(12);
         row.getStyleClass().add("activity-row");
         row.setAlignment(Pos.CENTER_LEFT);
@@ -239,23 +251,40 @@ public class Dashboard {
         row.getChildren().addAll(icon, textBox);
         return row;
     }
+
+   
+    public static BorderPane createMainWorkspaceView() {
+        BorderPane mainArea = new BorderPane();
+        mainArea.setTop(SyncActivity());
+        
+        VBox leftComponent = new VBox(16);
+        leftComponent.getChildren().addAll(createSysHealth(), transfers());
+        leftComponent.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(leftComponent, Priority.ALWAYS);
+        
+        VBox rightComponent = new VBox(16);
+        rightComponent.getChildren().addAll(activeStat(), recent());
+        rightComponent.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(rightComponent, Priority.ALWAYS);
+
+        HBox contentGrid = new HBox(24);
+        contentGrid.setAlignment(Pos.TOP_LEFT);
+        contentGrid.setPadding(new Insets(20, 0, 0, 0));
+        contentGrid.getChildren().addAll(leftComponent, rightComponent);
+
+        mainArea.setCenter(contentGrid);
+        mainArea.setPadding(new Insets(24));
+        
+        return mainArea;
+    }
+
     public static BorderPane createDashboard() {
         BorderPane root = new BorderPane();
 
         VBox sidebar = Sidebar.createsidebar(root);
         root.setLeft(sidebar);
 
-        BorderPane mainArea = new BorderPane();
-        //mainArea.setTop(SyncActivity());
-        VBox leftComponent = new VBox(10);
-        leftComponent.getChildren().addAll(/*createSysHealth(),*/ transfers());
-        VBox rightComponent = new VBox(10);
-        rightComponent.getChildren().addAll(activeStat(), recent());
-
-       // mainArea.setLeft(leftComponent);
-        mainArea.setRight(rightComponent);
-        mainArea.setPadding(new Insets(24, 24, 24, 24));
-        root.setCenter(mainArea);
+        root.setCenter(createMainWorkspaceView());
 
         return root;
     }
