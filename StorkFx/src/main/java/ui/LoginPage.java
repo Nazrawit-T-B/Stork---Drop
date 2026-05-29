@@ -5,14 +5,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import service.FileTransferService;
-
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 public class LoginPage {
 
@@ -66,68 +58,59 @@ public class LoginPage {
 
             new Thread(() -> {
                 try {
-                    URL url = new URL("http://localhost:8080/api/auth/login");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "application/json; utf-8");
-                    conn.setDoOutput(true);
-
+                    String url = "http://localhost:8080/api/auth/login";
                     String jsonInputString = String.format("{\"identifier\": \"%s\", \"password\": \"%s\"}", input, password);
 
-                    try(OutputStream os = conn.getOutputStream()) {
-                        byte[] inputBytes = jsonInputString.getBytes(StandardCharsets.UTF_8);
-                        os.write(inputBytes, 0, inputBytes.length);         
+                    String rawJson = NetworkClient.sendPost(url, jsonInputString, false);
+
+                    System.out.println("RAW SERVER JSON RESPONSE: " + rawJson);
+
+                    String finalToken = "";
+                    String finalName = input;
+                    String finalEmail = input.contains("@") ? input : input + "@storkdrop.com";
+
+                    if (rawJson.contains("\"token\"")) {
+                        finalToken = rawJson.split("\"token\":\"")[1].split("\"")[0];
+                    }
+                    if (rawJson.contains("\"fullName\"")) {
+                        finalName = rawJson.split("\"fullName\":\"")[1].split("\"")[0];
+                    } else if (rawJson.contains("\"username\"")) {
+                        finalName = rawJson.split("\"username\":\"")[1].split("\"")[0];
+                    }
+                    if (rawJson.contains("\"email\"")) {
+                        finalEmail = rawJson.split("\"email\":\"")[1].split("\"")[0];
                     }
 
-                    int responseCode = conn.getResponseCode();
+                    SessionManager.login(finalName, finalEmail, finalToken);
 
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-
-                        StringBuilder response = new StringBuilder();
-                        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                            String responseLine;
-                            while ((responseLine = br.readLine()) != null) {
-                                response.append(responseLine.trim());
-                            }
-                        }
-
-                        String rawJson = response.toString();
-
-                        String finalName = input;
-                        String finalEmail = input.contains("@") ? input : input + "@storkdrop.com";
-
-                        if (rawJson.contains("\"username\"")) {
-                            finalName = rawJson.split("\"username\":\"")[1].split("\"")[0];
-                        } else if (rawJson.contains("\"name\"")) {
-                            finalName = rawJson.split("\"name\":\"")[1].split("\"")[0];
-                        }
-                        
-                        if (rawJson.contains("\"email\"")) {
-                            finalEmail = rawJson.split("\"email\":\"")[1].split("\"")[0];
-                        }
-
-                        SessionManager.login(finalName, finalEmail);
-
-                        Platform.runLater(() -> {
-                            loginBtn.setDisable(false);
-                            errorLabel.setStyle("-fx-text-fill: #10B981;");
-                            errorLabel.setText("Login successful!");
-                            
-                        });
-
-                    } else {
-                        Platform.runLater(() -> {
-                            loginBtn.setDisable(false);
-                            errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                            errorLabel.setText("Invalid username/email or password.");
-                        });
-                    }
+                   Platform.runLater(() -> {
+    loginBtn.setDisable(false);
+    errorLabel.setStyle("-fx-text-fill: #10B981;");
+    errorLabel.setText("Login successful!");
+    
+    javafx.scene.layout.VBox updatedSidebar = Sidebar.createsidebar(root);
+    root.setLeft(updatedSidebar);
+    
+    for (javafx.scene.Node node : updatedSidebar.getChildren()) {
+        if (node instanceof javafx.scene.control.ToggleButton) {
+            javafx.scene.control.ToggleButton navButton = (javafx.scene.control.ToggleButton) node;
+            
+            if ("Sync & Activity".equals(navButton.getText())) {
+                navButton.setSelected(true); 
+                navButton.fire();            
+                break;
+            }
+        }
+    }
+});
 
                 } catch (Exception ex) {
+                    ex.printStackTrace(); 
                     Platform.runLater(() -> {
                         loginBtn.setDisable(false);
                         errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                        errorLabel.setText("Cannot connect to backend server.");
+                        errorLabel.setText(ex.getMessage().contains("Server returned") ? 
+                                           "Invalid username/email or password." : "Cannot connect to server.");
                     });
                 }
             }).start();
