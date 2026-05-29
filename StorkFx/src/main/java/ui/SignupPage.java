@@ -7,19 +7,12 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 public class SignupPage {
 
     public static StackPane createSignupPage(BorderPane root) {
         StackPane signupRoot = new StackPane();
         signupRoot.getStyleClass().add("login-root");
-
         signupRoot.getStylesheets().add(SignupPage.class.getResource("/login.css").toExternalForm());
 
         VBox box = new VBox(20);
@@ -76,73 +69,42 @@ public class SignupPage {
             errorLabel.setText("Creating account...");
             create.setDisable(true);
 
-          
             new Thread(() -> {
                 try {
-                    URL url = new URL("http://localhost:8080/api/auth/signup");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "application/json; utf-8");
-                    conn.setDoOutput(true);
-
+                    String url = "http://localhost:8080/api/auth/signup";
                     String jsonInputString = String.format(
                         "{\"fullName\": \"%s\", \"username\": \"%s\", \"email\": \"%s\", \"password\": \"%s\"}",
                         fName, uName, uEmail, uPassword
                     );
 
-                    try (OutputStream os = conn.getOutputStream()) {
-                        byte[] inputBytes = jsonInputString.getBytes(StandardCharsets.UTF_8);
-                        os.write(inputBytes, 0, inputBytes.length);
-                    }
+                    NetworkClient.sendPost(url, jsonInputString, false);
 
-                    int responseCode = conn.getResponseCode();
-Platform.runLater(() -> {
-    create.setDisable(false);
-    try {
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            root.setCenter(LoginPage.createLoginPage(root));
-        } else {
-            java.io.InputStream errorStream = conn.getErrorStream();
-            if (errorStream != null) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
-                    StringBuilder response = new StringBuilder();
-                    String responseLine;
-                    while ((responseLine = br.readLine()) != null) {
-                        response.append(responseLine.trim());
-                    }
-                    errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                    errorLabel.setText(response.length() > 0 ? response.toString() : "Server Error: " + responseCode);
-                }
-            } else {
-                errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                errorLabel.setText("Server returned HTTP error status: " + responseCode);
-            }
-        }
-    } catch (Exception ex) {
-        errorLabel.setStyle("-fx-text-fill: #EF4444;");
-        errorLabel.setText("Failed to process server response.");
-    }
-});
+                    Platform.runLater(() -> {
+                        create.setDisable(false);
+                        root.setCenter(LoginPage.createLoginPage(root));
+                    });
+
                 } catch (Exception ex) {
                     Platform.runLater(() -> {
                         create.setDisable(false);
                         errorLabel.setStyle("-fx-text-fill: #EF4444;");
-                        errorLabel.setText("Cannot connect to backend server.");
+                        
+                        String incomingError = ex.getMessage();
+                        if (incomingError != null && incomingError.contains("username")) {
+                            errorLabel.setText("Username is already taken.");
+                        } else if (incomingError != null && incomingError.contains("email")) {
+                            errorLabel.setText("Email address is already registered.");
+                        } else {
+                            errorLabel.setText("Registration failed or server connection unavailable.");
+                        }
                     });
                 }
             }).start();
         });
 
         box.getChildren().addAll(
-                title,
-                subtitle,
-                fullName,
-                username,
-                email,
-                password,
-                create,
-                errorLabel, 
-                backToLogin
+                title, subtitle, fullName, username, email, password, 
+                create, errorLabel, backToLogin
         );
 
         signupRoot.getChildren().add(box);
