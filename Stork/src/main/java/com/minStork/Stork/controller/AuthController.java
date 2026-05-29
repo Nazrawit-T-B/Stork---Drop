@@ -1,18 +1,13 @@
 package com.minStork.Stork.controller;
 
+import com.minStork.Stork.data.UserEntity;
+import com.minStork.Stork.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.minStork.Stork.services.AuthService;
-
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*") 
@@ -20,29 +15,32 @@ import jakarta.servlet.http.HttpServletRequest;
 public class AuthController {
 
     @Autowired
-    private AuthService authService;
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private AuthService authService; 
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         try {
             if (request.getIdentifier() == null || request.getIdentifier().trim().isEmpty() ||
                 request.getPassword() == null || request.getPassword().isEmpty()) {
                 return ResponseEntity.badRequest().body("Fill all fields");
             }
 
-            boolean loginSuccessful = authService.login(
+            // Call updated service method
+            Optional<UserEntity> authenticatedUser = authService.login(
                     request.getIdentifier().trim(), 
                     request.getPassword()
             );
 
-            if (loginSuccessful) {
+            if (authenticatedUser.isPresent()) {
+                UserEntity user = authenticatedUser.get();
                 
-                String fullName = "Miki Buzu"; 
-                String email = request.getIdentifier().contains("@") ? request.getIdentifier() : "miki@storkdrop.com";
-                
-                String jsonResponse = String.format("{\"fullName\":\"%s\",\"email\":\"%s\"}", fullName, email);
+                // Construct JSON containing token, fullName, and email dynamically
+                String jsonResponse = String.format(
+                    "{\"token\":\"%s\",\"fullName\":\"%s\",\"email\":\"%s\"}", 
+                    user.getAuthToken(), 
+                    user.getFullName(), 
+                    user.getEmail()
+                );
                 return ResponseEntity.ok(jsonResponse);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
