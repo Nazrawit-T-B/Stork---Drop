@@ -32,9 +32,10 @@ public class UserEntity {
     @Column(nullable = false)
     private String passwordHash;
 
-     @Column(unique = true, length = 255)
+    // Stores the active validation token string used to authorize parallel requests securely
+    @Column(unique = true, length = 255)
     private String authToken;
-    
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -50,12 +51,15 @@ public class UserEntity {
 
     public UserEntity() {
     }
+
     public Long getId() {
         return id;
     }
+
     public String getFullName() {
         return fullName;
     }
+
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
@@ -84,7 +88,7 @@ public class UserEntity {
         this.passwordHash = passwordHash;
     }
 
-      public String getAuthToken() {
+    public String getAuthToken() {
         return authToken;
     }
 
