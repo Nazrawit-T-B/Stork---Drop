@@ -2,28 +2,42 @@ package ui;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.application.Platform;
 
 public class SessionManager {
     private static final BooleanProperty loggedIn = new SimpleBooleanProperty(false);
-    private static String fullName = "Guest User";
-    private static String email = "Not signed in";
+    private static final StringProperty fullName = new SimpleStringProperty("");
+    private static final StringProperty email = new SimpleStringProperty("");
+    private static final StringProperty token = new SimpleStringProperty("");
+
+    public static BooleanProperty loggedInProperty() { return loggedIn; }
+    public static StringProperty fullNameProperty() { return fullName; }
+    public static StringProperty emailProperty() { return email; }
+    public static StringProperty tokenProperty() { return token; }
 
     public static boolean isLoggedIn() { return loggedIn.get(); }
-    
-    public static BooleanProperty loggedInProperty() { return loggedIn; }
+    public static String getFullName() { return fullName.get(); }
+    public static String getEmail() { return email.get(); }
+    public static String getActiveToken() { return token.get(); }
 
-    public static String getFullName() { return fullName; }
-    public static String getEmail() { return email; }
-
-    public static void login(String name, String userEmail) {
-        fullName = name;
-        email = userEmail;
-        loggedIn.set(true); 
+    public static void login(String name, String userEmail, String userToken) {
+        Platform.runLater(() -> {
+            fullName.set(name);
+            email.set(userEmail);
+            token.set(userToken);
+            loggedIn.set(true);
+            System.out.println("SessionManager successfully updated for: " + name);
+        });
     }
 
     public static void logout() {
-        fullName = "Guest User";
-        email = "Not signed in";
-        loggedIn.set(false); 
+        Platform.runLater(() -> {
+            fullName.set("");
+            email.set("");
+            token.set("");
+            loggedIn.set(false);
+        });
     }
 }
