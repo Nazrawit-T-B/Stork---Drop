@@ -32,6 +32,9 @@ public class UserEntity {
     @Column(nullable = false)
     private String passwordHash;
 
+     @Column(unique = true, length = 255)
+    private String authToken;
+    
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -42,22 +45,17 @@ public class UserEntity {
     @OneToMany(mappedBy = "uploadedBy")
     private List<FileVersionEntity> uploadedVersions = new ArrayList<>();
 
-    
     @OneToMany(mappedBy = "user")
     private List<PermissionEntity> permissions = new ArrayList<>();
 
     public UserEntity() {
     }
-
-
     public Long getId() {
         return id;
     }
-
     public String getFullName() {
         return fullName;
     }
-
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
@@ -84,6 +82,14 @@ public class UserEntity {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+      public String getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
     }
 
     public LocalDateTime getCreatedAt() {
