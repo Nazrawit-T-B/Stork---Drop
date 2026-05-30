@@ -1,5 +1,7 @@
 package service;
 
+import ui.SessionManager;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -12,12 +14,13 @@ public class FileTransferService {
 
         String boundary = "----JavaFXBoundary" + System.currentTimeMillis();
 
-        URL url = new URL("http://localhost:8080/file");
+        URL url = new URL("http://localhost:8080/api/file");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+        connection.setRequestProperty("Authorization", "Bearer "+ SessionManager.getActiveToken());
 
         try (OutputStream outputStream = connection.getOutputStream();
              PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true)) {
@@ -47,10 +50,11 @@ public class FileTransferService {
         System.out.println("Response: " + responseCode);
     }
     public void downloadFromServer(String filename) throws IOException{
-        URL url=new URL("http://localhost:8080/download?fileName="+ filename);
+        URL url=new URL("http://localhost:8080/api/download?fileName="+ filename);
         HttpURLConnection connection=(HttpURLConnection) url.openConnection();
 
         connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization","Bearer "+ SessionManager.getActiveToken());
         try{
         int responseCode=connection.getResponseCode();
         if(responseCode==200){

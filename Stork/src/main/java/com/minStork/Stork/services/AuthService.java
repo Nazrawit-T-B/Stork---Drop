@@ -2,6 +2,7 @@ package com.minStork.Stork.services;
 
 import com.minStork.Stork.data.UserEntity;
 import com.minStork.Stork.data.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class AuthService {
     }
 
     // CHANGED: Now returns the UserEntity with a newly generated token if validation passes
+    @Transactional
     public Optional<UserEntity> login(String input, String password) {
         Optional<UserEntity> userOpt = repo.findByUsername(input);
 
@@ -34,14 +36,15 @@ public class AuthService {
             user.setAuthToken(uniqueToken);
             
             // Persist the token to the database record
-            repo.save(user);
+            repo.updateAuthToken(user.getId(),uniqueToken);
+            //repo.save(user);
             
             return Optional.of(user);
         }
 
         return Optional.empty();
     }
-
+    @Transactional
     public boolean register(String fullName, String username, String email, String password) {
         if (repo.findByUsername(username).isPresent() || repo.findByEmail(email).isPresent()) {
             return false;
