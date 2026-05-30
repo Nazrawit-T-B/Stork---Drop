@@ -36,7 +36,7 @@ public class FileStorageService  {
     }
 
     private static final String STORAGE_DIR = "Stork/storage";
-    public void saveFile (MultipartFile incomingfile) throws IOException {
+    public FileEntity saveFile (MultipartFile incomingfile,UserEntity user) throws IOException {
         if (incomingfile == null|| incomingfile.isEmpty()) {
             throw new NullPointerException("No file to save!");
         }
@@ -44,18 +44,14 @@ public class FileStorageService  {
         if (!dir.exists()) {
             dir.mkdirs();
         }
+        String filename=Paths.get(incomingfile.getOriginalFilename()).getFileName().toString();
         var targetFile = new File(STORAGE_DIR + File.separator + incomingfile.getOriginalFilename());
 
-        /*if (!Objects.equals(targetFile.getParent(), STORAGE_DIR)) {
-                throw new SecurityException("Unsupported filename");
-        }*/
         Files.copy(incomingfile.getInputStream(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
         //add file metadata into the database
         //metadata's to be saved
-        /*
-        Authentication auth= SecurityContextHolder.getContext().getAuthentication();
-        String username=auth.getName();
-        UserEntity user=userRepository.findByUsername(username).orElseThrow(()->new RuntimeException("User not found"));
+
         FileEntity fileEntity=new FileEntity();
         fileEntity.setFilename(incomingfile.getOriginalFilename());
         fileEntity.setStoragePath(targetFile.getAbsolutePath());
@@ -65,17 +61,13 @@ public class FileStorageService  {
         fileEntity.setLastModified(LocalDateTime.now());
         fileEntity.setOwner(user);
 
-        fileRepository.save(fileEntity);*/
+        return fileRepository.save(fileEntity);
     }
     public File getDownloadFile(String filename) throws Exception {
         if(filename==null){
             throw new NullPointerException("Filename is null");
         }
         var fileToDownload=new File(STORAGE_DIR+File.separator+filename);
-
-    /* if (!Objects.equals(fileToDownload.getParent(), STORAGE_DIR)) {
-            throw new SecurityException("Unsupported filename");
-        }*/
         if(!fileToDownload.exists()){
             throw new FileNotFoundException("File does not exist");
         }

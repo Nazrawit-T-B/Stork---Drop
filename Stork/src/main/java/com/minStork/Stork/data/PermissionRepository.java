@@ -8,5 +8,6 @@ import java.util.List;
 @Repository
 public interface PermissionRepository extends JpaRepository<PermissionEntity, Long> {
     PermissionEntity findByUserAndFile(UserEntity user, FileEntity file);
+
     List<PermissionEntity> findByUser(UserEntity user);
 }
