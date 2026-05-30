@@ -10,7 +10,10 @@ public class SessionManager {
     private static final BooleanProperty loggedIn = new SimpleBooleanProperty(false);
     private static final StringProperty fullName = new SimpleStringProperty("");
     private static final StringProperty email = new SimpleStringProperty("");
+    
+    // 1. Keep a raw volatile String for instant background thread access
     private static final StringProperty token = new SimpleStringProperty("");
+    private static volatile String rawToken = ""; 
 
     public static BooleanProperty loggedInProperty() { return loggedIn; }
     public static StringProperty fullNameProperty() { return fullName; }
@@ -20,9 +23,12 @@ public class SessionManager {
     public static boolean isLoggedIn() { return loggedIn.get(); }
     public static String getFullName() { return fullName.get(); }
     public static String getEmail() { return email.get(); }
-    public static String getActiveToken() { return token.get(); }
+    
+    public static String getActiveToken() { return rawToken; }
 
     public static void login(String name, String userEmail, String userToken) {
+        rawToken = userToken;
+
         Platform.runLater(() -> {
             fullName.set(name);
             email.set(userEmail);
@@ -33,6 +39,8 @@ public class SessionManager {
     }
 
     public static void logout() {
+        rawToken = "";
+
         Platform.runLater(() -> {
             fullName.set("");
             email.set("");
