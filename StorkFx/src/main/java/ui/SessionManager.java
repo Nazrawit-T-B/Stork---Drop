@@ -27,25 +27,17 @@ public class SessionManager {
     public static String getActiveToken() { return rawToken; }
 
     public static void login(String name, String userEmail, String userToken) {
-        rawToken = userToken;
-
-        Platform.runLater(() -> {
             fullName.set(name);
             email.set(userEmail);
             token.set(userToken);
             loggedIn.set(true);
             System.out.println("SessionManager successfully updated for: " + name);
-        });
     }
 
     public static void logout() {
-        rawToken = "";
-
-        Platform.runLater(() -> {
             fullName.set("");
             email.set("");
             token.set("");
             loggedIn.set(false);
-        });
     }
 }

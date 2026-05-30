@@ -42,6 +42,10 @@
             <artifactId>ikonli-materialdesign2-pack</artifactId>
             <version>12.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>

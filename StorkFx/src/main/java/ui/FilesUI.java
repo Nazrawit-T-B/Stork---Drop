@@ -1,5 +1,6 @@
 package ui;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -22,6 +23,7 @@ import java.util.Stack;
 
 
 public class FilesUI {
+     static FontIcon bellIcon = new FontIcon("fas-bell");
     public static class FileEntry {
         private final SimpleStringProperty name;
         private final SimpleStringProperty size;
@@ -40,6 +42,7 @@ public class FilesUI {
         public SimpleStringProperty lastModifiedProperty() { return lastModified; }
         public SimpleStringProperty actionProperty()       { return action; }
     }
+
     public static HBox FilesHeader() {
         Label label = new Label("Files");
         label.getStyleClass().add("page-title");
@@ -55,7 +58,7 @@ public class FilesUI {
         searchBox.getStyleClass().add("search-box");
         searchBox.setAlignment(Pos.CENTER_LEFT);
 
-        FontIcon bellIcon = new FontIcon("fas-bell");
+
         bellIcon.getStyleClass().add("notif-icon");
 
         Region spacer = new Region();
@@ -102,23 +105,37 @@ public class FilesUI {
                 link.setOnAction(e -> {
                     FileEntry entry = getTableView().getItems().get(getIndex());
                     String filename=entry.nameProperty().get();
-                    FileTransferService service=new FileTransferService();
-                    try {
-                        service.downloadFromServer(filename);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    link.setDisable(true);
+                    link.setText("Downloading...");
+                    Thread thread=new Thread(()->{
+                        FileTransferService service=new FileTransferService();
+                        try {
+                            service.downloadFromServer(filename);
+                            Platform.runLater(()->{
+                                link.setText("Downloaded");
+                                link.setStyle("-fx-text-fill:green");
+                                link.setDisable(false);
+                            });
+                        } catch (IOException ex) {
+                            Platform.runLater(()->{
+                                link.setText("Failed");
+                                link.setStyle("-fx-text-fill: red");
+                                link.setDisable(false);
+
+                            });
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                   thread.setDaemon(true);
+                   thread.start();
                 });
+                setGraphic(link);
             }
 
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getIndex() < 0) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(link);
-                }
+                setGraphic(empty? null: link);
             }
         });
 
