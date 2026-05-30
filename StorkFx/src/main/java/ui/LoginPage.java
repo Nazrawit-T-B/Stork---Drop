@@ -6,6 +6,9 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
+import static ui.FilesUI.loadUserFiles;
+
+
 public class LoginPage {
 
     public static StackPane createLoginPage(BorderPane root) {
@@ -82,6 +85,7 @@ public class LoginPage {
                     }
 
                     SessionManager.login(finalName, finalEmail, finalToken);
+                    loadUserFiles(FilesUI.table);
 
                    Platform.runLater(() -> {
     loginBtn.setDisable(false);

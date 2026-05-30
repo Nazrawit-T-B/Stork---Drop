@@ -1,5 +1,6 @@
 package ui;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -22,6 +23,7 @@ import java.util.Stack;
 
 
 public class FilesUI {
+     static TableView<FileEntry> table = new TableView<>();
     public static class FileEntry {
         private final SimpleStringProperty name;
         private final SimpleStringProperty size;
@@ -83,7 +85,7 @@ public class FilesUI {
        afileslabel.getStyleClass().add("all-files-label");
        allfiles.getChildren().addAll(afileslabel);
 
-        TableView<FileEntry> table = new TableView<>();
+
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
 
@@ -132,7 +134,6 @@ public class FilesUI {
 
 
         main.getChildren().addAll(welcome,desc,allfiles,table,buttonBox);
-
         return main;
     }
     public static Button Upload(TableView<FileEntry> table){
@@ -153,6 +154,7 @@ public class FilesUI {
                 File file= fileChooser.showOpenDialog(stage);
                 if (file!=null){
                     service.uploadFileToServer(file);
+                    loadUserFiles(table);
                     Label l=new Label(service.response+ file.getName());
                     l.setStyle("-fx-text-fill: white;");
                     VBox card = new VBox(l);
@@ -177,5 +179,57 @@ public class FilesUI {
         
         return upload;
     }
+    public static void loadUserFiles(TableView<FileEntry> table) {
+        System.out.println("=== loadUserFiles called, token: " + SessionManager.getActiveToken());
+        Thread thread = new Thread(() -> {
+            try {
+                String response = NetworkClient.sendGet(
+                        "http://localhost:8080/api/files", true);
+                System.out.println("=== Files response: " + response);
+                java.util.List<FileEntry> entries = new java.util.ArrayList<>();
+
+                // Strip the outer array brackets
+                response = response.trim().replaceAll("^\\[|\\]$", "");
+
+                // Split into individual objects
+                String[] objects = response.split("\\},\\{");
+
+                for (String obj : objects) {
+                    obj = obj.replace("{", "").replace("}", "");
+
+                    String filename = extractValue(obj, "filename");
+                    String size = extractValue(obj, "size");
+                    String lastModified = extractValue(obj, "lastModified");
+                    String permission = extractValue(obj, "permission");
+
+                    if (!filename.isEmpty()) {
+                        entries.add(new FileEntry(filename, size + " bytes", lastModified, permission));
+                    }
+                }
+
+                Platform.runLater(() -> table.getItems().setAll(entries));
+
+            } catch (Exception e) {
+                System.out.println("=== loadUserFiles error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private static String extractValue(String json, String key) {
+        try {
+            if (json.contains("\"" + key + "\":\"")) {
+                return json.split("\"" + key + "\":\"")[1].split("\"")[0];
+            } else if (json.contains("\"" + key + "\":")) {
+                return json.split("\"" + key + "\":")[1].split("[,}]")[0].trim();
+            }
+        } catch (Exception e) {
+            return "";
+        }
+        return "";
+    }
+
 
 }
