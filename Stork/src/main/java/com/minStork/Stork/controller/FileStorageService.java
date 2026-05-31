@@ -91,15 +91,23 @@ public class FileStorageService  {
 
     }
     public File getDownloadFile(String filename) throws Exception {
-        if(filename==null){
-            throw new NullPointerException("Filename is null");
-        }
-        var fileToDownload=new File(STORAGE_DIR+File.separator+filename);
-        if(!fileToDownload.exists()){
-            throw new FileNotFoundException("File does not exist");
-        }
-        return fileToDownload;
+        if (filename == null) throw new NullPointerException("Filename is null");
 
+        // find the latest version of this file
+        FileEntity fileEntity = fileRepository.findByFilename(filename).orElse(null);
+        if (fileEntity == null) throw new FileNotFoundException("File not found in DB");
+
+        // get the latest version's storage path
+        FileVersionEntity latestVersion = fileVersionRepository
+                .findFirstByFileOrderByVersionNumberDesc(fileEntity)
+                .orElse(null);
+
+        if (latestVersion == null) throw new FileNotFoundException("No versions found");
+
+        File fileToDownload = new File(latestVersion.getStoragePath());
+        if (!fileToDownload.exists()) throw new FileNotFoundException("File does not exist on disk");
+
+        return fileToDownload;
     }
     @Transactional
     public void deleteFile(FileEntity file) throws Exception{

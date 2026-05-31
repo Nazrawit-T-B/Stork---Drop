@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface FileVersionRepository extends JpaRepository<FileVersionEntity, Long> {
     List<FileVersionEntity> findByFileOrderByVersionNumberDesc(FileEntity file);
     Optional<FileVersionEntity> findFirstByFileOrderByVersionNumberDesc(FileEntity file);
+    Optional<FileVersionEntity> findByStoragePathEndingWith(String filename);
 }

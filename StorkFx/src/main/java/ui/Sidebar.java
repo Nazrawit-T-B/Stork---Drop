@@ -35,7 +35,7 @@ public class Sidebar {
         ToggleButton btnSync = new ToggleButton("Sync & Activity");
         FontIcon syncIcon = new FontIcon("mdi2h-home-outline");
         syncIcon.setIconSize(20); syncIcon.setIconColor(Color.WHITE);
-        btnSync.setToggleGroup(group); btnSync.setSelected(true); btnSync.setGraphic(syncIcon);
+        btnSync.setToggleGroup(group);  btnSync.setGraphic(syncIcon);
         btnSync.getStyleClass().add("nav-button");
         btnSync.setOnAction(e -> {
             root.setCenter(Dashboard.createMainWorkspaceView());
@@ -69,6 +69,7 @@ public class Sidebar {
         // 5. AUTHENTICATION TOGGLE BUTTON
         ToggleButton btnAuth = new ToggleButton();
         btnAuth.setToggleGroup(group);
+        btnAuth.setSelected(true);
         btnAuth.getStyleClass().add("nav-button");
         
         FontIcon authIcon = new FontIcon();

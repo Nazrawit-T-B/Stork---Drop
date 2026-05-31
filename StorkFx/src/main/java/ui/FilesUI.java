@@ -21,6 +21,7 @@ import java.util.List;
 
 public class FilesUI {
     static FontIcon bellIcon = new FontIcon("fas-bell");
+    private static TableView<FileEntry> fileTable;
     public static class FileEntry {
         private final SimpleStringProperty name;
         private final SimpleStringProperty size;
@@ -39,32 +40,20 @@ public class FilesUI {
         public SimpleStringProperty lastModifiedProperty() { return lastModified; }
 
     }
+    public static void refreshFiles(){
+        if(fileTable!=null) loadFiles(fileTable);
+    }
 
     public static HBox FilesHeader() {
         Label label = new Label("Files");
         label.getStyleClass().add("page-title");
-
-        TextField search = new TextField();
-        search.setPromptText("Search files or folders...");
-        search.getStyleClass().add("search-field");
-        search.setPrefWidth(260);
-
-        FontIcon searchIcon = new FontIcon("fas-search");
-        searchIcon.getStyleClass().add("search-icon");
-        HBox searchBox = new HBox(8, searchIcon, search);
-        searchBox.getStyleClass().add("search-box");
-        searchBox.setAlignment(Pos.CENTER_LEFT);
-
-
-        bellIcon.getStyleClass().add("notif-icon");
-
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         HBox header = new HBox(16);
         header.getStyleClass().add("top-bar");
         header.setAlignment(Pos.CENTER_LEFT);
-        header.getChildren().addAll(label, spacer, searchBox, bellIcon);
+        header.getChildren().addAll(label, spacer);
 
         return header;
     }
@@ -84,9 +73,10 @@ public class FilesUI {
         allfiles.getChildren().addAll(afileslabel);
 
         TableView<FileEntry> table = new TableView<>();
+        fileTable=table;
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("Upload file to continue"));
-        loadFiles(table);
+        //loadFiles(table);
 
 
         TableColumn<FileEntry, String> nameCol = new TableColumn<>("Name");
@@ -106,6 +96,7 @@ public class FilesUI {
                 link.setOnAction(e -> {
                     FileEntry entry = getTableView().getItems().get(getIndex());
                     String filename=entry.nameProperty().get();
+                    System.out.println("Download clicked for: " + filename);
                     link.setDisable(true);
                     link.setText("Downloading...");
                     Thread thread=new Thread(()->{

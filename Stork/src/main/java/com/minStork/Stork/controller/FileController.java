@@ -1,5 +1,6 @@
 package com.minStork.Stork.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,44 +64,41 @@ public class FileController {
 
     }
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename ,HttpServletRequest request) {
-        try{
-
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename, HttpServletRequest request) {
+        try {
             String sanitized = Paths.get(filename).getFileName().toString();
             if (!sanitized.equals(filename) || filename.contains("..")) {
                 return ResponseEntity.badRequest().build();
             }
 
-
             UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
+            if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
             FileEntity fileEntity = fileRepository.findByFilename(sanitized).orElse(null);
-            if (fileEntity == null) {
-                return ResponseEntity.notFound().build();
-            }
+            if (fileEntity == null) return ResponseEntity.notFound().build();
 
             PermissionEntity permission = permissionRepository.findByUserAndFile(user, fileEntity);
-            if (permission == null ) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
+            if (permission == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-            var fileToDownload= fileStorageService.getDownloadFile(filename);
-            System.out.println("Requested file: "+filename);
-            System.out.println("Resolved path: "+fileToDownload.getAbsolutePath());
-            System.out.println("Exists? "+ fileToDownload.exists());
+            // get latest version from file_versions table
+            FileVersionEntity latestVersion = fileVersionRepository
+                    .findFirstByFileOrderByVersionNumberDesc(fileEntity)
+                    .orElse(null);
+            if (latestVersion == null) return ResponseEntity.notFound().build();
+
+            File fileToDownload = new File(latestVersion.getStoragePath());
+            if (!fileToDownload.exists()) return ResponseEntity.notFound().build();
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+ filename+"\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitized + "\"")
                     .contentLength(fileToDownload.length())
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(new FileSystemResource(fileToDownload));
-        }catch(Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            //throw new RuntimeException(e);
         }
-
     }
     @GetMapping("/files")
     public ResponseEntity<List<Map<String,Object>>> getAllFiles(HttpServletRequest request){

@@ -70,7 +70,8 @@ public class FileTransferService {
                 if(!downloadsFolder.exists()){
                     downloadsFolder.mkdirs();
                 }
-                File outputFile=new File(downloadsFolder,filename);
+                String decodedFilename = java.net.URLDecoder.decode(filename, java.nio.charset.StandardCharsets.UTF_8);
+                File outputFile=new File(downloadsFolder,decodedFilename);
 
                 try(FileOutputStream fos= new FileOutputStream(outputFile)){
                     byte [] buffer=new byte[4096];
@@ -82,6 +83,10 @@ public class FileTransferService {
                 in.close();
 
                 response="Downloaded to : "+ outputFile.getAbsolutePath();
+                responseCode = connection.getResponseCode();
+                System.out.println("Download response: " + responseCode);
+                System.out.println("Downloading: " + filename);
+                System.out.println("Saving to: " + System.getProperty("user.home") + File.separator + "Downloads" + File.separator + filename);
             }else{
                 response="Download failed. Response code: " +responseCode;
             }}finally{
@@ -97,6 +102,8 @@ public class FileTransferService {
         connection.setRequestProperty("Authorization","Bearer "+ SessionManager.getActiveToken());
         connection.setConnectTimeout(10000); // 10 seconds
         connection.setReadTimeout(30000);
+        System.out.println("Downloading: " + filename);
+        System.out.println("Token: " + SessionManager.getActiveToken());
 
         int responseCode=connection.getResponseCode();
         if(responseCode!=HttpURLConnection.HTTP_OK){
@@ -104,6 +111,7 @@ public class FileTransferService {
         }
     }
     public List<FilesUI.FileEntry> fetchFilesFromServer() throws IOException {
+        if (SessionManager.getActiveToken() == null) return new ArrayList<>();
         URL url = new URL("http://localhost:8080/api/files");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
@@ -116,6 +124,7 @@ public class FileTransferService {
 
         List<FilesUI.FileEntry> entries = new ArrayList<>();
         response = response.trim().replaceAll("^\\[|\\]$", "");
+        if (response.isEmpty()) return entries;
         String[] objects = response.split("\\},\\{");
 
         for (String obj : objects) {
@@ -140,6 +149,7 @@ public class FileTransferService {
         return end == -1 ? rest.trim() : rest.substring(0, end).trim();
     }
     public List<Map<String, String>> fetchFileVersions(String filename) throws IOException {
+
         String encodedFilename = java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8);
         URL url = new URL("http://localhost:8080/api/files/versions?fileName=" + encodedFilename);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -171,6 +181,7 @@ public class FileTransferService {
     }
 
     public List<String> fetchAllFilenames() throws IOException {
+        if (SessionManager.getActiveToken() == null) return new ArrayList<>();
         List<FilesUI.FileEntry> files = fetchFilesFromServer();
         List<String> names = new ArrayList<>();
         for (FilesUI.FileEntry f : files) {

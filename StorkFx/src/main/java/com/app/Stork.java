@@ -24,17 +24,11 @@ public class Stork extends Application{
     public void start(Stage stage){
         root.setLeft(createsidebar(root));
 
-        BorderPane mainArea=new BorderPane();
-        mainArea.setTop(FilesHeader());
-        VBox leftComponent=new VBox(10);
-        leftComponent.getChildren().addAll(/*createSysHealth(),*/transfers());
-        VBox rightComponent=new VBox(10);
-        rightComponent.getChildren().addAll(activeStat(),recent());
-        mainArea.setCenter(Area());
-        mainArea.setPadding(new Insets(24, 24, 24, 24));
-        root.setCenter(mainArea);
+        // show login page first
+        root.setCenter(ui.LoginPage.createLoginPage(root));
+
         layout.getChildren().add(root);
-        Scene scene=new Scene(layout,1100,800);
+        Scene scene = new Scene(layout, 1100, 800);
         scene.getStylesheets().addAll(
                 getClass().getResource("/dashboard.css").toExternalForm(),
                 getClass().getResource("/files.css").toExternalForm()
