@@ -16,6 +16,7 @@ import service.FileTransferService;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 
 public class FilesUI {
@@ -84,6 +85,7 @@ public class FilesUI {
 
         TableView<FileEntry> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        loadFiles(table);
 
 
         TableColumn<FileEntry, String> nameCol = new TableColumn<>("Name");
@@ -97,7 +99,9 @@ public class FilesUI {
 
         TableColumn<FileEntry,String> actionCol = new TableColumn<>("Action");
         actionCol.setCellFactory(col->new TableCell<>(){
+            private final Hyperlink dellink=new Hyperlink("Delete");
             private final Hyperlink link=new Hyperlink("Download");{
+                dellink.setStyle("-fx-text-fill:red");
                 link.setOnAction(e -> {
                     FileEntry entry = getTableView().getItems().get(getIndex());
                     String filename=entry.nameProperty().get();
@@ -125,13 +129,37 @@ public class FilesUI {
                     thread.setDaemon(true);
                     thread.start();
                 });
-                setGraphic(link);
+               // setGraphic(link,dellink);
+               dellink.setOnAction(e->{
+                   FileEntry entry=getTableView().getItems().get(getIndex());
+                   String filename=entry.nameProperty().get();
+                   dellink.setDisable(true);
+                   dellink.setText("Deleting...");
+                   Thread thread=new Thread(()->{
+                       FileTransferService service=new FileTransferService();
+                       try{
+                           service.deleteFromServer(filename);
+                           Platform.runLater(()->{
+                               link.setDisable(false);
+                           });
+                       } catch (IOException ex) {
+                           Platform.runLater(()->{
+                               link.setText("Delete");
+                               link.setStyle("-fx-text-fill: red");
+                               link.setDisable(false);
+                           });
+                           throw new RuntimeException(ex);
+                       }
+                   });
+                   thread.setDaemon(true);
+                   thread.start();
+               });
             }
 
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty? null: link);
+                setGraphic(empty? null: new HBox(10,link,dellink));
             }
         });
 
@@ -166,6 +194,7 @@ public class FilesUI {
                 File file= fileChooser.showOpenDialog(stage);
                 if (file!=null){
                     service.uploadFileToServer(file);
+                    Platform.runLater(()->loadFiles(table));
                     Label l=new Label(service.response+ file.getName());
                     l.setStyle("-fx-text-fill: white;");
                     VBox card = new VBox(l);
@@ -178,9 +207,9 @@ public class FilesUI {
                     popup.getContent().add(card);
                     popup.setAutoHide(true);
                     popup.show(stage);
-
+/*
                     FileEntry entry=new FileEntry(file.getName(),file.length()+"bytes",new java.util.Date(file.lastModified()).toString(),"Download");
-                    table.getItems().add(entry);
+                    table.getItems().add(entry);*/
                 }
             }catch(Exception ex){
                 ex.printStackTrace();
@@ -189,6 +218,19 @@ public class FilesUI {
         });
 
         return upload;
+    }
+    private static void loadFiles(TableView<FileEntry> table) {
+        Thread thread = new Thread(() -> {
+            FileTransferService service = new FileTransferService();
+            try {
+                List<FileEntry> files = service.fetchFilesFromServer();
+                Platform.runLater(() -> table.getItems().setAll(files));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
 }

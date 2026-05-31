@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -115,6 +116,27 @@ public class FileController {
                 })
                 .toList();
         return ResponseEntity.ok(files);
+    }
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteFile(@RequestParam("fileName") String filename, HttpServletRequest request){
+        UserEntity user=(UserEntity) request.getAttribute("authenticatedUser");
+        if(user==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+       FileEntity file=fileRepository.findByFilename(filename).orElse(null);
+        if(file == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found");
+        }
+        if(!permissionService.verifyOwnership(user,file)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No permission to delete");
+
+        }
+        try{
+            fileStorageService.deleteFile(file);
+            return ResponseEntity.ok("File deleted successfully");
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete file");
+        }
     }
 
 

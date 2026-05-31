@@ -1,15 +1,14 @@
 package com.minStork.Stork.controller;
 
-import com.minStork.Stork.data.FileEntity;
-import com.minStork.Stork.data.FileRepository;
-import com.minStork.Stork.data.UserEntity;
-import com.minStork.Stork.data.UserRepository;
+import com.minStork.Stork.data.*;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -19,10 +18,12 @@ import java.time.LocalDateTime;
 @Service
 public class FileStorageService  {
     private final UserRepository userRepository;
+    private final PermissionRepository permissionRepository;
     private final FileRepository fileRepository;
-    public FileStorageService(UserRepository userRepository,FileRepository fileRepository){
+    public FileStorageService(UserRepository userRepository,FileRepository fileRepository,PermissionRepository permissionRepository){
         this.userRepository=userRepository;
         this.fileRepository=fileRepository;
+        this.permissionRepository=permissionRepository;
     }
 
     private static final String STORAGE_DIR = "Stork/storage";
@@ -63,6 +64,13 @@ public class FileStorageService  {
         }
         return fileToDownload;
 
+    }
+    @Transactional
+    public void deleteFile(FileEntity file) throws Exception{
+        Path path=Paths.get(STORAGE_DIR).resolve(file.getFilename());
+        Files.deleteIfExists(path);
+        permissionRepository.deleteByFile(file);
+       fileRepository.delete(file);
     }
 
 
