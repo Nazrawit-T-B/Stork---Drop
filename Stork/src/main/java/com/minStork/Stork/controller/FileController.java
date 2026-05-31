@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,7 +56,7 @@ public class FileController {
         }catch(IOException e){
             log.log(Level.SEVERE,"Error during upload",e);
         }
-       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
 
     }
     @GetMapping("/download")
@@ -106,8 +107,8 @@ public class FileController {
         }
         List<PermissionEntity> permissions=permissionRepository.findByUser(user);
         List<Map<String,Object>> files=permissions.stream().map(p->{
-            Map<String,Object> fileInfo =new HashMap<>();
-            fileInfo.put("filename", p.getFile().getFilename());
+                    Map<String,Object> fileInfo =new HashMap<>();
+                    fileInfo.put("filename", p.getFile().getFilename());
                     fileInfo.put("size", p.getFile().getSize());
                     fileInfo.put("lastModified", p.getFile().getLastModified().toString());
                     fileInfo.put("permission", p.getPermissionType().name());
@@ -115,6 +116,27 @@ public class FileController {
                 })
                 .toList();
         return ResponseEntity.ok(files);
+    }
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteFile(@RequestParam("fileName") String filename, HttpServletRequest request){
+        UserEntity user=(UserEntity) request.getAttribute("authenticatedUser");
+        if(user==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+       FileEntity file=fileRepository.findByFilename(filename).orElse(null);
+        if(file == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found");
+        }
+        if(!permissionService.verifyOwnership(user,file)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No permission to delete");
+
+        }
+        try{
+            fileStorageService.deleteFile(file);
+            return ResponseEntity.ok("File deleted successfully");
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete file");
+        }
     }
 
 

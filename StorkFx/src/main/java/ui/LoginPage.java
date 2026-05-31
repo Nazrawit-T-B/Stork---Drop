@@ -6,6 +6,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
+
+
 public class LoginPage {
 
     public static StackPane createLoginPage(BorderPane root) {
@@ -82,6 +84,7 @@ public class LoginPage {
                     }
 
                     SessionManager.login(finalName, finalEmail, finalToken);
+
 
                    Platform.runLater(() -> {
     loginBtn.setDisable(false);

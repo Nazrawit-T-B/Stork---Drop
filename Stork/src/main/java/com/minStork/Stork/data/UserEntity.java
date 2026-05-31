@@ -111,5 +111,4 @@ public class UserEntity {
     public List<PermissionEntity> getPermissions() {
         return permissions;
     }
-
 }

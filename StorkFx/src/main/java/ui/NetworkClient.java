@@ -12,7 +12,7 @@ public class NetworkClient {
     public static String sendPost(String urlString, String jsonInputString, boolean requireAuth) throws Exception {
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        
+
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");

@@ -25,12 +25,12 @@ public class TokenInterceptor implements HandlerInterceptor {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); 
+            String token = authHeader.substring(7);
 
             Optional<UserEntity> userOpt = userRepository.findByAuthToken(token);
             if (userOpt.isPresent()) {
                 request.setAttribute("authenticatedUser", userOpt.get());
-                return true; 
+                return true;
             }
         }
 

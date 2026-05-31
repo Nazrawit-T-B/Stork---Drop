@@ -2,6 +2,7 @@ package com.minStork.Stork.data;
 
 import java.util.List;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +15,6 @@ public interface PermissionRepository extends JpaRepository<PermissionEntity, Lo
     List<PermissionEntity> findByFile(FileEntity file);
 
     List<PermissionEntity> findByFileId(Long userId);
+    @Transactional
+    void deleteByFile(FileEntity file);
 }

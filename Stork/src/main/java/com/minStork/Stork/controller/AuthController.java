@@ -10,36 +10,36 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*") 
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
-    private AuthService authService; 
+    private AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         try {
             if (request.getIdentifier() == null || request.getIdentifier().trim().isEmpty() ||
-                request.getPassword() == null || request.getPassword().isEmpty()) {
+                    request.getPassword() == null || request.getPassword().isEmpty()) {
                 return ResponseEntity.badRequest().body("Fill all fields");
             }
 
             // Call updated service method
             Optional<UserEntity> authenticatedUser = authService.login(
-                    request.getIdentifier().trim(), 
+                    request.getIdentifier().trim(),
                     request.getPassword()
             );
 
             if (authenticatedUser.isPresent()) {
                 UserEntity user = authenticatedUser.get();
-                
+
                 // Construct JSON containing token, fullName, and email dynamically
                 String jsonResponse = String.format(
-                    "{\"token\":\"%s\",\"fullName\":\"%s\",\"email\":\"%s\"}", 
-                    user.getAuthToken(), 
-                    user.getFullName(), 
-                    user.getEmail()
+                        "{\"token\":\"%s\",\"fullName\":\"%s\",\"email\":\"%s\"}",
+                        user.getAuthToken(),
+                        user.getFullName(),
+                        user.getEmail()
                 );
                 return ResponseEntity.ok(jsonResponse);
             } else {
@@ -55,18 +55,18 @@ public class AuthController {
     public ResponseEntity<String> signup(@RequestBody SignupRequest request) {
         try {
             if (request.getFullName() == null || request.getFullName().trim().isEmpty() ||
-                request.getUsername() == null || request.getUsername().trim().isEmpty() ||
-                request.getEmail() == null || request.getEmail().trim().isEmpty() ||
-                request.getPassword() == null || request.getPassword().isEmpty()) {
-                
+                    request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+                    request.getEmail() == null || request.getEmail().trim().isEmpty() ||
+                    request.getPassword() == null || request.getPassword().isEmpty()) {
+
                 return ResponseEntity.badRequest().body("Please fill out all registration fields.");
             }
 
             boolean isRegistered = authService.register(
-                request.getFullName().trim(),
-                request.getUsername().trim(),
-                request.getEmail().trim(),
-                request.getPassword()
+                    request.getFullName().trim(),
+                    request.getUsername().trim(),
+                    request.getEmail().trim(),
+                    request.getPassword()
             );
             if (isRegistered) {
                 return ResponseEntity.ok("Account created successfully!");

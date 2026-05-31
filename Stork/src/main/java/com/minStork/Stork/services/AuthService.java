@@ -30,15 +30,15 @@ public class AuthService {
 
         if (userOpt.isPresent() && encoder.matches(password, userOpt.get().getPasswordHash())) {
             UserEntity user = userOpt.get();
-            
+
             // Generate a secure, unique token string from scratch
             String uniqueToken = "STORK-TOKEN-" + UUID.randomUUID().toString().toUpperCase();
             user.setAuthToken(uniqueToken);
-            
+
             // Persist the token to the database record
             repo.updateAuthToken(user.getId(),uniqueToken);
             //repo.save(user);
-            
+
             return Optional.of(user);
         }
 

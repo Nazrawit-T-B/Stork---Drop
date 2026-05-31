@@ -2,28 +2,25 @@ package ui;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import org.kordamp.ikonli.javafx.FontIcon;
 import service.FileTransferService;
 
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Stack;
+import java.util.List;
 
 
 public class FilesUI {
-     static FontIcon bellIcon = new FontIcon("fas-bell");
+    static FontIcon bellIcon = new FontIcon("fas-bell");
     public static class FileEntry {
         private final SimpleStringProperty name;
         private final SimpleStringProperty size;
@@ -72,22 +69,23 @@ public class FilesUI {
         return header;
     }
     public static VBox Area(){
-       VBox main=new VBox(20);
-       main.setPadding(new Insets(24));
+        VBox main=new VBox(20);
+        main.setPadding(new Insets(24));
 
-       Label welcome=new Label("Welcome");
-       welcome.getStyleClass().add("welcome-label");
-       Label desc=new Label("Manage your cloud workspace and collaborate in real-time");
-       desc.getStyleClass().add("desc-label");
+        Label welcome=new Label("Welcome");
+        welcome.getStyleClass().add("welcome-label");
+        Label desc=new Label("Manage your cloud workspace and collaborate in real-time");
+        desc.getStyleClass().add("desc-label");
 
-       HBox allfiles=new HBox();
-       allfiles.setPadding(new Insets(10,0,0,0));
-       Label afileslabel=new Label("All Files");
-       afileslabel.getStyleClass().add("all-files-label");
-       allfiles.getChildren().addAll(afileslabel);
+        HBox allfiles=new HBox();
+        allfiles.setPadding(new Insets(10,0,0,0));
+        Label afileslabel=new Label("All Files");
+        afileslabel.getStyleClass().add("all-files-label");
+        allfiles.getChildren().addAll(afileslabel);
 
         TableView<FileEntry> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        loadFiles(table);
 
 
         TableColumn<FileEntry, String> nameCol = new TableColumn<>("Name");
@@ -101,7 +99,9 @@ public class FilesUI {
 
         TableColumn<FileEntry,String> actionCol = new TableColumn<>("Action");
         actionCol.setCellFactory(col->new TableCell<>(){
+            private final Hyperlink dellink=new Hyperlink("Delete");
             private final Hyperlink link=new Hyperlink("Download");{
+                dellink.setStyle("-fx-text-fill:red");
                 link.setOnAction(e -> {
                     FileEntry entry = getTableView().getItems().get(getIndex());
                     String filename=entry.nameProperty().get();
@@ -126,16 +126,40 @@ public class FilesUI {
                             throw new RuntimeException(ex);
                         }
                     });
+                    thread.setDaemon(true);
+                    thread.start();
+                });
+               // setGraphic(link,dellink);
+               dellink.setOnAction(e->{
+                   FileEntry entry=getTableView().getItems().get(getIndex());
+                   String filename=entry.nameProperty().get();
+                   dellink.setDisable(true);
+                   dellink.setText("Deleting...");
+                   Thread thread=new Thread(()->{
+                       FileTransferService service=new FileTransferService();
+                       try{
+                           service.deleteFromServer(filename);
+                           Platform.runLater(()->{
+                               link.setDisable(false);
+                           });
+                       } catch (IOException ex) {
+                           Platform.runLater(()->{
+                               link.setText("Delete");
+                               link.setStyle("-fx-text-fill: red");
+                               link.setDisable(false);
+                           });
+                           throw new RuntimeException(ex);
+                       }
+                   });
                    thread.setDaemon(true);
                    thread.start();
-                });
-                setGraphic(link);
+               });
             }
 
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty? null: link);
+                setGraphic(empty? null: new HBox(10,link,dellink));
             }
         });
 
@@ -170,6 +194,7 @@ public class FilesUI {
                 File file= fileChooser.showOpenDialog(stage);
                 if (file!=null){
                     service.uploadFileToServer(file);
+                    Platform.runLater(()->loadFiles(table));
                     Label l=new Label(service.response+ file.getName());
                     l.setStyle("-fx-text-fill: white;");
                     VBox card = new VBox(l);
@@ -182,17 +207,30 @@ public class FilesUI {
                     popup.getContent().add(card);
                     popup.setAutoHide(true);
                     popup.show(stage);
-
+/*
                     FileEntry entry=new FileEntry(file.getName(),file.length()+"bytes",new java.util.Date(file.lastModified()).toString(),"Download");
-                    table.getItems().add(entry);
+                    table.getItems().add(entry);*/
                 }
             }catch(Exception ex){
                 ex.printStackTrace();
             }
 
         });
-        
+
         return upload;
+    }
+    private static void loadFiles(TableView<FileEntry> table) {
+        Thread thread = new Thread(() -> {
+            FileTransferService service = new FileTransferService();
+            try {
+                List<FileEntry> files = service.fetchFilesFromServer();
+                Platform.runLater(() -> table.getItems().setAll(files));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
 }
