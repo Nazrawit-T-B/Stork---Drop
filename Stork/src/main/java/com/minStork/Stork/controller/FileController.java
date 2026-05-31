@@ -2,11 +2,17 @@ package com.minStork.Stork.controller;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.minStork.Stork.data.*;
+import com.minStork.Stork.services.PermissionService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
@@ -16,50 +22,65 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@RequestMapping ("/api")
 public class FileController {
 
     @Autowired
     private FileStorageService fileStorageService;
     @Autowired
     private PermissionRepository permissionRepository;
+    @Autowired
+    private FileRepository fileRepository;
+    @Autowired
+    private PermissionService permissionService;
 
     private static final Logger log=Logger.getLogger(FileController.class.getName());
     @PostMapping("/file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,Authentication auth){
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, HttpServletRequest request){
         try{
-
-            if(auth ==null || !auth.isAuthenticated()){
+            UserEntity user=(UserEntity) request.getAttribute("authenticatedUser");
+            if(user== null){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
             }
-            fileStorageService.saveFile(file);
+
+            FileEntity fileEntity=fileStorageService.saveFile(file,user);
+            permissionService.makeOwner(user,fileEntity);
+            log.info("File uploaded by "+ user.getUsername()+":"+ file.getOriginalFilename());
             return ResponseEntity.ok("Uploaded: "+file.getOriginalFilename());
             //add exsisting file logic for replace
         }catch(IOException e){
             log.log(Level.SEVERE,"Error during upload",e);
         }
-       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
 
     }
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename ,Authentication auth) {
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename ,HttpServletRequest request) {
         try{
 
-            String userRole = auth.getAuthorities().stream()
-                    .map(a -> a.getAuthority().replace("ROLE_", "").toLowerCase())
-                    .findFirst()
-                    .orElse("");
-/*
-            PermissionEntity permission=permissionRepository.findByUserAndFile(filename).orElse(null);
-            if (permission == null || !permission.getAllowedRolesAsList().contains(userRole)) {
+            String sanitized = Paths.get(filename).getFileName().toString();
+            if (!sanitized.equals(filename) || filename.contains("..")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+
+            UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            FileEntity fileEntity = fileRepository.findByFilename(sanitized).orElse(null);
+            if (fileEntity == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PermissionEntity permission = permissionRepository.findByUserAndFile(user, fileEntity);
+            if (permission == null ) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }*/
+            }
 
             var fileToDownload= fileStorageService.getDownloadFile(filename);
             System.out.println("Requested file: "+filename);
@@ -77,11 +98,23 @@ public class FileController {
         }
 
     }
-    @Autowired
-    private FileRepository fileRepository;
     @GetMapping("/files")
-    public ResponseEntity<List<FileEntity>> getAllFiles(){
-        return ResponseEntity.ok(fileRepository.findAll());
+    public ResponseEntity<List<Map<String,Object>>> getAllFiles(HttpServletRequest request){
+        UserEntity user=(UserEntity) request.getAttribute("authenticatedUser");
+        if(user==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<PermissionEntity> permissions=permissionRepository.findByUser(user);
+        List<Map<String,Object>> files=permissions.stream().map(p->{
+                    Map<String,Object> fileInfo =new HashMap<>();
+                    fileInfo.put("filename", p.getFile().getFilename());
+                    fileInfo.put("size", p.getFile().getSize());
+                    fileInfo.put("lastModified", p.getFile().getLastModified().toString());
+                    fileInfo.put("permission", p.getPermissionType().name());
+                    return fileInfo;
+                })
+                .toList();
+        return ResponseEntity.ok(files);
     }
 
 

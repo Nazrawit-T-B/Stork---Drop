@@ -2,28 +2,24 @@ package ui;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import org.kordamp.ikonli.javafx.FontIcon;
 import service.FileTransferService;
 
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Stack;
 
 
 public class FilesUI {
-     static TableView<FileEntry> table = new TableView<>();
+    static FontIcon bellIcon = new FontIcon("fas-bell");
     public static class FileEntry {
         private final SimpleStringProperty name;
         private final SimpleStringProperty size;
@@ -42,6 +38,7 @@ public class FilesUI {
         public SimpleStringProperty lastModifiedProperty() { return lastModified; }
         public SimpleStringProperty actionProperty()       { return action; }
     }
+
     public static HBox FilesHeader() {
         Label label = new Label("Files");
         label.getStyleClass().add("page-title");
@@ -57,7 +54,7 @@ public class FilesUI {
         searchBox.getStyleClass().add("search-box");
         searchBox.setAlignment(Pos.CENTER_LEFT);
 
-        FontIcon bellIcon = new FontIcon("fas-bell");
+
         bellIcon.getStyleClass().add("notif-icon");
 
         Region spacer = new Region();
@@ -71,21 +68,21 @@ public class FilesUI {
         return header;
     }
     public static VBox Area(){
-       VBox main=new VBox(20);
-       main.setPadding(new Insets(24));
+        VBox main=new VBox(20);
+        main.setPadding(new Insets(24));
 
-       Label welcome=new Label("Welcome");
-       welcome.getStyleClass().add("welcome-label");
-       Label desc=new Label("Manage your cloud workspace and collaborate in real-time");
-       desc.getStyleClass().add("desc-label");
+        Label welcome=new Label("Welcome");
+        welcome.getStyleClass().add("welcome-label");
+        Label desc=new Label("Manage your cloud workspace and collaborate in real-time");
+        desc.getStyleClass().add("desc-label");
 
-       HBox allfiles=new HBox();
-       allfiles.setPadding(new Insets(10,0,0,0));
-       Label afileslabel=new Label("All Files");
-       afileslabel.getStyleClass().add("all-files-label");
-       allfiles.getChildren().addAll(afileslabel);
+        HBox allfiles=new HBox();
+        allfiles.setPadding(new Insets(10,0,0,0));
+        Label afileslabel=new Label("All Files");
+        afileslabel.getStyleClass().add("all-files-label");
+        allfiles.getChildren().addAll(afileslabel);
 
-
+        TableView<FileEntry> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
 
@@ -104,23 +101,37 @@ public class FilesUI {
                 link.setOnAction(e -> {
                     FileEntry entry = getTableView().getItems().get(getIndex());
                     String filename=entry.nameProperty().get();
-                    FileTransferService service=new FileTransferService();
-                    try {
-                        service.downloadFromServer(filename);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    link.setDisable(true);
+                    link.setText("Downloading...");
+                    Thread thread=new Thread(()->{
+                        FileTransferService service=new FileTransferService();
+                        try {
+                            service.downloadFromServer(filename);
+                            Platform.runLater(()->{
+                                link.setText("Downloaded");
+                                link.setStyle("-fx-text-fill:green");
+                                link.setDisable(false);
+                            });
+                        } catch (IOException ex) {
+                            Platform.runLater(()->{
+                                link.setText("Failed");
+                                link.setStyle("-fx-text-fill: red");
+                                link.setDisable(false);
+
+                            });
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                    thread.setDaemon(true);
+                    thread.start();
                 });
+                setGraphic(link);
             }
 
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getIndex() < 0) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(link);
-                }
+                setGraphic(empty? null: link);
             }
         });
 
@@ -134,6 +145,7 @@ public class FilesUI {
 
 
         main.getChildren().addAll(welcome,desc,allfiles,table,buttonBox);
+
         return main;
     }
     public static Button Upload(TableView<FileEntry> table){
@@ -154,7 +166,6 @@ public class FilesUI {
                 File file= fileChooser.showOpenDialog(stage);
                 if (file!=null){
                     service.uploadFileToServer(file);
-                    loadUserFiles(table);
                     Label l=new Label(service.response+ file.getName());
                     l.setStyle("-fx-text-fill: white;");
                     VBox card = new VBox(l);
@@ -176,60 +187,8 @@ public class FilesUI {
             }
 
         });
-        
+
         return upload;
     }
-    public static void loadUserFiles(TableView<FileEntry> table) {
-        System.out.println("=== loadUserFiles called, token: " + SessionManager.getActiveToken());
-        Thread thread = new Thread(() -> {
-            try {
-                String response = NetworkClient.sendGet(
-                        "http://localhost:8080/api/files", true);
-                System.out.println("=== Files response: " + response);
-                java.util.List<FileEntry> entries = new java.util.ArrayList<>();
-
-                // Strip the outer array brackets
-                response = response.trim().replaceAll("^\\[|\\]$", "");
-
-                // Split into individual objects
-                String[] objects = response.split("\\},\\{");
-
-                for (String obj : objects) {
-                    obj = obj.replace("{", "").replace("}", "");
-
-                    String filename = extractValue(obj, "filename");
-                    String size = extractValue(obj, "size");
-                    String lastModified = extractValue(obj, "lastModified");
-                    String permission = extractValue(obj, "permission");
-
-                    if (!filename.isEmpty()) {
-                        entries.add(new FileEntry(filename, size + " bytes", lastModified, permission));
-                    }
-                }
-
-                Platform.runLater(() -> table.getItems().setAll(entries));
-
-            } catch (Exception e) {
-                System.out.println("=== loadUserFiles error: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    private static String extractValue(String json, String key) {
-        try {
-            if (json.contains("\"" + key + "\":\"")) {
-                return json.split("\"" + key + "\":\"")[1].split("\"")[0];
-            } else if (json.contains("\"" + key + "\":")) {
-                return json.split("\"" + key + "\":")[1].split("[,}]")[0].trim();
-            }
-        } catch (Exception e) {
-            return "";
-        }
-        return "";
-    }
-
 
 }

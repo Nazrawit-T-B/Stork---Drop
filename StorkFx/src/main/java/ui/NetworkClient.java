@@ -7,14 +7,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-
-
 public class NetworkClient {
 
     public static String sendPost(String urlString, String jsonInputString, boolean requireAuth) throws Exception {
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        
+
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
@@ -47,9 +45,10 @@ public class NetworkClient {
             throw new RuntimeException("Server returned HTTP response status code: " + code);
         }
     }
-    public static String sendGet(String urlString,boolean requireAuth) throws Exception{
-        URL url=new URL(urlString);
-        HttpURLConnection conn=(HttpURLConnection) url.openConnection();
+    /* Check this later on calmly
+    public static String sendGet(String urlString, boolean requireAuth) throws Exception {
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Accept", "application/json");
@@ -57,24 +56,23 @@ public class NetworkClient {
         if (requireAuth && SessionManager.isLoggedIn()) {
             String token = SessionManager.getActiveToken();
             if (token != null && !token.isEmpty()) {
-        conn.setRequestProperty("Authorization", "Bearer " + token);
+                conn.setRequestProperty("Authorization", "Bearer " + token);
             }
         }
 
         int code = conn.getResponseCode();
         if (code >= 200 && code < 300) {
-        try (BufferedReader br = new BufferedReader(
-            new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-        response.append(line.trim());
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    response.append(line.trim());
+                }
+                return response.toString();
+            }
+        } else {
+            throw new RuntimeException("Server returned: " + code);
         }
-        return response.toString();
-        }
-                } else {
-                throw new RuntimeException("Server returned: " + code);
-    }
-    }
-
+    }*/
 }
