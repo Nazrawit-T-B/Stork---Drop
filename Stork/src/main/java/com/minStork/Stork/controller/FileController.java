@@ -2,6 +2,7 @@ package com.minStork.Stork.controller;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,8 @@ public class FileController {
     private FileRepository fileRepository;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private FileVersionRepository fileVersionRepository;
 
     private static final Logger log=Logger.getLogger(FileController.class.getName());
     @PostMapping("/file")
@@ -132,12 +135,43 @@ public class FileController {
 
         }
         try{
+            List<FileVersionEntity> versions = fileVersionRepository.findByFileOrderByVersionNumberDesc(file);
+            for (FileVersionEntity version : versions) {
+                Path versionPath = Paths.get(version.getStoragePath());
+                System.out.println("Deleting: " + versionPath.toAbsolutePath());
+                Files.deleteIfExists(versionPath);
+            }
             fileStorageService.deleteFile(file);
             return ResponseEntity.ok("File deleted successfully");
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete file");
         }
     }
+    @GetMapping("/files/versions")
+    public ResponseEntity<List<Map<String, Object>>> getVersions(
+            @RequestParam("fileName") String filename,
+            HttpServletRequest request) {
+        UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        FileEntity file = fileRepository.findByFilenameAndOwner(filename, user).orElse(null);
+        if (file == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+
+
+        List<FileVersionEntity> versions = fileVersionRepository.findByFileOrderByVersionNumberDesc(file);
+
+        List<Map<String, Object>> response = versions.stream().map(v -> {
+            Map<String, Object> info = new HashMap<>();
+            info.put("filename",Paths.get(v.getStoragePath()).getFileName().toString());
+            info.put("version", v.getVersionNumber());
+            info.put("size", file.getSize());
+            return info;
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+
 
 
 }

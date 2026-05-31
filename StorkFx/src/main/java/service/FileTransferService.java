@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class FileTransferService {
     public String response="";
@@ -53,7 +54,8 @@ public class FileTransferService {
         System.out.println("Response: " + responseCode);
     }
     public void downloadFromServer(String filename) throws IOException{
-        URL url=new URL("http://localhost:8080/api/download?fileName="+ filename);
+        String encodedFilename = java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8);
+        URL url=new URL("http://localhost:8080/api/download?fileName="+ encodedFilename);
         HttpURLConnection connection=(HttpURLConnection) url.openConnection();
 
         connection.setRequestMethod("GET");
@@ -87,11 +89,14 @@ public class FileTransferService {
         }
     }
     public void deleteFromServer(String filename) throws IOException{
-        URL url=new URL("http://localhost:8080/api/delete?fileName="+ filename);
+        String encodedFilename = java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8);
+        URL url=new URL("http://localhost:8080/api/delete?fileName="+ encodedFilename);
         HttpURLConnection connection=(HttpURLConnection) url.openConnection();
 
         connection.setRequestMethod("DELETE");
         connection.setRequestProperty("Authorization","Bearer "+ SessionManager.getActiveToken());
+        connection.setConnectTimeout(10000); // 10 seconds
+        connection.setReadTimeout(30000);
 
         int responseCode=connection.getResponseCode();
         if(responseCode!=HttpURLConnection.HTTP_OK){
@@ -133,5 +138,44 @@ public class FileTransferService {
         }
         int end = rest.indexOf(",");
         return end == -1 ? rest.trim() : rest.substring(0, end).trim();
+    }
+    public List<Map<String, String>> fetchFileVersions(String filename) throws IOException {
+        String encodedFilename = java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8);
+        URL url = new URL("http://localhost:8080/api/files/versions?fileName=" + encodedFilename);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization", "Bearer " + SessionManager.getActiveToken());
+
+        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK)
+            throw new IOException("Failed to fetch versions");
+
+        String response = new String(connection.getInputStream().readAllBytes());
+
+        List<Map<String, String>> versions = new ArrayList<>();
+        response = response.trim().replaceAll("^\\[|\\]$", "");
+        if (response.isEmpty()) return versions;
+
+        String[] objects = response.split("\\},\\{");
+        for (String obj : objects) {
+            obj = obj.replaceAll("[{}]", "");
+            java.util.Map<String, String> entry = new java.util.HashMap<>();
+            entry.put("filename", extractValue(obj, "filename"));
+            entry.put("version", extractValue(obj, "version"));
+            entry.put("size", extractValue(obj, "size") + " bytes");
+            entry.put("uploadedAt", extractValue(obj, "uploadedAt"));
+            entry.put("uploadedBy", extractValue(obj, "uploadedBy"));
+            entry.put("initials", extractValue(obj, "initials"));
+            versions.add(entry);
+        }
+        return versions;
+    }
+
+    public List<String> fetchAllFilenames() throws IOException {
+        List<FilesUI.FileEntry> files = fetchFilesFromServer();
+        List<String> names = new ArrayList<>();
+        for (FilesUI.FileEntry f : files) {
+            names.add(f.nameProperty().get());
+        }
+        return names;
     }
 }
