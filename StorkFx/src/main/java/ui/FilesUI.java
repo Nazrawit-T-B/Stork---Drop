@@ -37,7 +37,7 @@ public class FilesUI {
         public SimpleStringProperty nameProperty()         { return name; }
         public SimpleStringProperty sizeProperty()         { return size; }
         public SimpleStringProperty lastModifiedProperty() { return lastModified; }
-        public SimpleStringProperty actionProperty()       { return action; }
+
     }
 
     public static HBox FilesHeader() {
@@ -85,6 +85,7 @@ public class FilesUI {
 
         TableView<FileEntry> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setPlaceholder(new Label("Upload file to continue"));
         loadFiles(table);
 
 
@@ -129,7 +130,7 @@ public class FilesUI {
                     thread.setDaemon(true);
                     thread.start();
                 });
-               // setGraphic(link,dellink);
+
                dellink.setOnAction(e->{
                    FileEntry entry=getTableView().getItems().get(getIndex());
                    String filename=entry.nameProperty().get();
@@ -140,13 +141,15 @@ public class FilesUI {
                        try{
                            service.deleteFromServer(filename);
                            Platform.runLater(()->{
-                               link.setDisable(false);
+                            table.getItems().remove(entry);
+                            table.refresh();
+
                            });
                        } catch (IOException ex) {
                            Platform.runLater(()->{
-                               link.setText("Delete");
-                               link.setStyle("-fx-text-fill: red");
-                               link.setDisable(false);
+                               dellink.setText("Delete");
+                               dellink.setStyle("-fx-text-fill: red");
+                               dellink.setDisable(false);
                            });
                            throw new RuntimeException(ex);
                        }
@@ -219,12 +222,16 @@ public class FilesUI {
 
         return upload;
     }
+
     private static void loadFiles(TableView<FileEntry> table) {
         Thread thread = new Thread(() -> {
             FileTransferService service = new FileTransferService();
             try {
                 List<FileEntry> files = service.fetchFilesFromServer();
-                Platform.runLater(() -> table.getItems().setAll(files));
+                Platform.runLater(() -> {
+                    table.getItems().clear();
+                    table.getItems().setAll(files);
+                    table.refresh();});
             } catch (IOException e) {
                 e.printStackTrace();
             }
