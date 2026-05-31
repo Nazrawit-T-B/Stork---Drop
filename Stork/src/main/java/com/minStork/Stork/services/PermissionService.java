@@ -1,5 +1,7 @@
 package com.minStork.Stork.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,10 @@ public class PermissionService {
 
     public String getPermission(UserEntity user, FileEntity file) {
         return permissionRepository.findByUserAndFile(user, file).getPermissionType().name();
+    }
+
+    public List<PermissionEntity> getFilePermissions(Long fileId) {
+        return permissionRepository.findByFileId(fileId);
     }
 
     public boolean verifyOwnership(UserEntity user, FileEntity file) {
