@@ -10,12 +10,16 @@ import com.minStork.Stork.data.PermissionEntity;
 import com.minStork.Stork.data.PermissionRepository;
 import com.minStork.Stork.data.PermissionType;
 import com.minStork.Stork.data.UserEntity;
+import com.minStork.Stork.data.UserRepository;
 
 @Service
 public class PermissionService {
     
     @Autowired
     private PermissionRepository permissionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public String getPermission(UserEntity user, FileEntity file) {
         return permissionRepository.findByUserAndFile(user, file).getPermissionType().name();
@@ -30,6 +34,15 @@ public class PermissionService {
     }
 
     public void grantPermission(PermissionEntity permission) {
+        permissionRepository.save(permission);
+    }
+
+    public void grantPermission(String username, FileEntity file, String permissionType) {
+        PermissionEntity permission = new PermissionEntity();
+        UserEntity user = userRepository.findByUsername(username).orElse(null);
+        permission.setUser(user);
+        permission.setFile(file);
+        permission.setPermissionType(PermissionType.valueOf(permissionType));
         permissionRepository.save(permission);
     }
 
