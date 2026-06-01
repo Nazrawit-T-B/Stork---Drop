@@ -93,11 +93,6 @@ public class LoginPage {
     
     javafx.scene.layout.VBox updatedSidebar = Sidebar.createsidebar(root);
     root.setLeft(updatedSidebar);
-
-    root.setCenter(FilesUI.FilesHeader());
-    VBox filesArea = FilesUI.Area();
-    root.setCenter(filesArea);
-    FilesUI.refreshFiles();
     
     for (javafx.scene.Node node : updatedSidebar.getChildren()) {
         if (node instanceof javafx.scene.control.ToggleButton) {
