@@ -6,6 +6,10 @@ public class FileModel {
     private String name;
     private String owner;
 
+    public FileModel() {
+        
+    }
+
     public FileModel(Long id, String name, String owner) {
         this.id = id;
         this.name = name;

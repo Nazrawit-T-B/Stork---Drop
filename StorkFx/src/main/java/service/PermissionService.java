@@ -28,6 +28,7 @@ public class PermissionService {
                         InputStream inputStream = connection.getInputStream();
                         ObjectMapper mapper = new ObjectMapper();
                         files = mapper.readValue(inputStream, new TypeReference<List<FileModel>>(){});
+                        System.out.println(files.size() + " file(s) received.");
                 }
         } finally {
                 connection.disconnect();
