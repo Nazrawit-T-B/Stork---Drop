@@ -1,18 +1,8 @@
 
 .login-root {
-    -fx-background-color: #0F172A;
-}
-
-.login-card {
     -fx-background-color: #1E293B;
-    -fx-background-radius: 16;
-    -fx-border-color: #334155;
-    -fx-border-radius: 16;
-    -fx-border-width: 1;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 30, 0, 0, 20);
+
 }
-
-
 .login-title {
     -fx-text-fill: #FFFFFF;
     -fx-font-family: "System";

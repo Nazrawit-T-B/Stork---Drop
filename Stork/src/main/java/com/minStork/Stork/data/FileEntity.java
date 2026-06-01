@@ -40,10 +40,13 @@ public class FileEntity {
     @Column(nullable = false)
     private Boolean deleted = false;
 
+       @Column(nullable = false)
+private Boolean isPublic = false;
+    
     @Column(nullable = false)
     private LocalDateTime lastModified = LocalDateTime.now();
 
-    // Many files belong to one owner
+    
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private UserEntity owner;
@@ -107,6 +110,14 @@ public class FileEntity {
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
+
+    public Boolean getIsPublic() {
+    return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+    this.isPublic = isPublic;
+     }
 
     public LocalDateTime getLastModified() {
         return lastModified;

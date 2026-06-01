@@ -16,7 +16,7 @@ public class SignupPage {
         signupRoot.getStylesheets().add(SignupPage.class.getResource("/login.css").toExternalForm());
 
         VBox box = new VBox(20);
-        box.setMaxWidth(420);
+        box.setMaxWidth(560);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(40));
         box.getStyleClass().add("login-card");

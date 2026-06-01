@@ -69,6 +69,8 @@ public class PermissionService {
     }
 
     public void makeOwner(UserEntity user, FileEntity file) {
+        PermissionEntity existing = permissionRepository.findByUserAndFile(user, file);
+        if (existing != null) return;
         PermissionEntity permission = new PermissionEntity();
         permission.setPermissionType(PermissionType.OWNER);
         permission.setUser(user);

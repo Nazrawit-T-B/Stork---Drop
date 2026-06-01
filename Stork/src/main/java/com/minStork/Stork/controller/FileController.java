@@ -2,6 +2,7 @@ package com.minStork.Stork.controller;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -38,67 +39,99 @@ public class FileController {
     private FileRepository fileRepository;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private FileVersionRepository fileVersionRepository;
 
     private static final Logger log=Logger.getLogger(FileController.class.getName());
     @PostMapping("/file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, HttpServletRequest request){
-        try{
-            UserEntity user=(UserEntity) request.getAttribute("authenticatedUser");
-            if(user== null){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
-            }
-
-            FileEntity fileEntity=fileStorageService.saveFile(file,user);
-            permissionService.makeOwner(user,fileEntity);
-            log.info("File uploaded by "+ user.getUsername()+":"+ file.getOriginalFilename());
-            return ResponseEntity.ok("Uploaded: "+file.getOriginalFilename());
-            //add exsisting file logic for replace
-        }catch(IOException e){
-            log.log(Level.SEVERE,"Error during upload",e);
+public ResponseEntity<String> uploadFile(
+        @RequestParam("file") MultipartFile file, 
+        @RequestParam("isPublic") Boolean isPublic, // 🆕 Gather parameter from form-data
+        HttpServletRequest request) {
+    try {
+        UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
 
+        // Pass the visibility choice right into the storage service logic
+        FileEntity fileEntity = fileStorageService.saveFile(file, user, isPublic);
+        permissionService.makeOwner(user, fileEntity);
+        
+        log.info("File uploaded by " + user.getUsername() + " [Public=" + isPublic + "]");
+        return ResponseEntity.ok("Uploaded: " + file.getOriginalFilename());
+    } catch (IOException e) {
+        log.log(Level.SEVERE, "Error during upload", e);
     }
-    @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename ,HttpServletRequest request) {
-        try{
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
+}
 
-            String sanitized = Paths.get(filename).getFileName().toString();
-            if (!sanitized.equals(filename) || filename.contains("..")) {
-                return ResponseEntity.badRequest().build();
-            }
+@GetMapping("/files/public-feed")
+public ResponseEntity<List<Map<String, Object>>> getPublicFeed(HttpServletRequest request) {
+    UserEntity currentUser = (UserEntity) request.getAttribute("authenticatedUser");
+    if (currentUser == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
+    List<FileEntity> publicFiles = fileRepository.findByIsPublicTrue();
+    List<Map<String, Object>> feed = publicFiles.stream()
+        .filter(file -> file.getOwner() != null && !file.getOwner().getId().equals(currentUser.getId()))
+        .map(file -> {
+            Map<String, Object> info = new java.util.HashMap<>();
+            info.put("filename", file.getFilename());
+            info.put("ownerName", file.getOwner().getUsername());
+            info.put("size", file.getSize());
+            info.put("lastModified", file.getLastModified().toString());
+            return info;
+        })
+        .toList();
 
-            UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            FileEntity fileEntity = fileRepository.findByFilename(sanitized).orElse(null);
-            if (fileEntity == null) {
-                return ResponseEntity.notFound().build();
-            }
+    return ResponseEntity.ok(feed);
+}
+   @GetMapping("/download")
+public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String filename, HttpServletRequest request) {
+    try {
+        String sanitized = Paths.get(filename).getFileName().toString();
+        if (!sanitized.equals(filename) || filename.contains("..")) {
+            return ResponseEntity.badRequest().build();
+        }
 
+        UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        FileEntity fileEntity = fileRepository.findByFilename(sanitized).orElse(null);
+        if (fileEntity == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 🆕 STRATEGY: Allow download if it's a public file OR if the user has explicit permissions
+        boolean isPublic = fileEntity.getIsPublic() != null && fileEntity.getIsPublic();
+        
+        if (!isPublic) {
+            // If it's private, fall back to checking the permission table
             PermissionEntity permission = permissionRepository.findByUserAndFile(user, fileEntity);
-            if (permission == null ) {
+            if (permission == null) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-
-            var fileToDownload= fileStorageService.getDownloadFile(filename);
-            System.out.println("Requested file: "+filename);
-            System.out.println("Resolved path: "+fileToDownload.getAbsolutePath());
-            System.out.println("Exists? "+ fileToDownload.exists());
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+ filename+"\"")
-                    .contentLength(fileToDownload.length())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(new FileSystemResource(fileToDownload));
-        }catch(Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            //throw new RuntimeException(e);
         }
 
+        // Processing the binary download stream below remains unchanged...
+        var fileToDownload = fileStorageService.getDownloadFile(filename);
+        System.out.println("Requested file: " + filename);
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentLength(fileToDownload.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new FileSystemResource(fileToDownload));
+                
+    } catch(Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+}
     @GetMapping("/files")
     public ResponseEntity<List<Map<String,Object>>> getAllFiles(HttpServletRequest request){
         UserEntity user=(UserEntity) request.getAttribute("authenticatedUser");
@@ -132,12 +165,43 @@ public class FileController {
 
         }
         try{
+            List<FileVersionEntity> versions = fileVersionRepository.findByFileOrderByVersionNumberDesc(file);
+            for (FileVersionEntity version : versions) {
+                Path versionPath = Paths.get(version.getStoragePath());
+                System.out.println("Deleting: " + versionPath.toAbsolutePath());
+                Files.deleteIfExists(versionPath);
+            }
             fileStorageService.deleteFile(file);
             return ResponseEntity.ok("File deleted successfully");
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete file");
         }
     }
+    @GetMapping("/files/versions")
+    public ResponseEntity<List<Map<String, Object>>> getVersions(
+            @RequestParam("fileName") String filename,
+            HttpServletRequest request) {
+        UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        FileEntity file = fileRepository.findByFilenameAndOwner(filename, user).orElse(null);
+        if (file == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+
+
+        List<FileVersionEntity> versions = fileVersionRepository.findByFileOrderByVersionNumberDesc(file);
+
+        List<Map<String, Object>> response = versions.stream().map(v -> {
+            Map<String, Object> info = new HashMap<>();
+            info.put("filename",Paths.get(v.getStoragePath()).getFileName().toString());
+            info.put("version", v.getVersionNumber());
+            info.put("size", file.getSize());
+            return info;
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+
 
 
 }
