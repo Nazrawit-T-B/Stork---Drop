@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.minStork.Stork.data.FileEntity;
+import com.minStork.Stork.data.FileRepository;
 import com.minStork.Stork.data.PermissionEntity;
 import com.minStork.Stork.data.PermissionRepository;
 import com.minStork.Stork.data.PermissionType;
@@ -21,6 +22,9 @@ public class PermissionService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private FileRepository fileRepository;
+
     public String getPermission(UserEntity user, FileEntity file) {
         return permissionRepository.findByUserAndFile(user, file).getPermissionType().name();
     }
@@ -33,7 +37,11 @@ public class PermissionService {
         return permissionRepository.findByUserAndFile(user, file).getPermissionType() == PermissionType.OWNER;
     }
 
-    public void grantPermission(PermissionEntity permission) {
+    public void grantPermission(Long fileId, String username, PermissionType permissionType) {
+        PermissionEntity permission = new PermissionEntity();
+        permission.setFile(fileRepository.findById(fileId).orElse(null));
+        permission.setUser(userRepository.findByUsername(username).orElse(null));
+        permission.setPermissionType(permissionType);
         permissionRepository.save(permission);
     }
 
@@ -46,8 +54,18 @@ public class PermissionService {
         permissionRepository.save(permission);
     }
 
-    public void revokePermission(PermissionEntity permission) {
-        permissionRepository.delete(permissionRepository.findByUserAndFile(permission.getUser(), permission.getFile()));
+    public void updatePermission(Long fileId, String username, PermissionType permissionType) {
+        UserEntity user = userRepository.findByUsername(username).orElse(null);
+        FileEntity file = fileRepository.findById(fileId).orElse(null);
+        PermissionEntity permission = permissionRepository.findByUserAndFile(user, file);
+        permission.setPermissionType(permissionType);
+        permissionRepository.save(permission);
+    }
+
+    public void revokePermission(Long fileId, String username) {
+        UserEntity user = userRepository.findByUsername(username).orElse(null);
+        FileEntity file = fileRepository.findById(fileId).orElse(null);
+        permissionRepository.delete(permissionRepository.findByUserAndFile(user, file));
     }
 
     public void makeOwner(UserEntity user, FileEntity file) {

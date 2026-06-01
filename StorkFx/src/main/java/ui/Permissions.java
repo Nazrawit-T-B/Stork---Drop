@@ -377,18 +377,16 @@ public class Permissions {
         grantBtn.setOnAction(
                 e -> {
 
-                    if (
-                            selectedFile == null
-                    ) {
+                    if (selectedFile == null) {
                         return;
                     }
-
-                    permissionService
-                            .grantAccess(
-                                    selectedFile.getId(),
-                                    usernameField.getText(),
-                                    permissionBox.getValue()
-                            );
+                    
+                        permissionService.grantAccess(
+                                selectedFile.getId(),
+                                usernameField.getText(),
+                                permissionBox.getValue()
+                                );
+                    
 
                     usernameField.clear();
 
@@ -497,18 +495,15 @@ public class Permissions {
     }
 
     private static void refreshPermissions() {
-
-        if (
-                selectedFile == null
-        ) {
+        if (selectedFile == null) {
             return;
         }
-
-        permissions.setAll(
-                permissionService
-                        .getPermissions(
-                                selectedFile.getId()
-                        )
-        );
+        List<PermissionModel> permissionsList = new ArrayList<>();
+        try {
+            permissionsList = permissionService.getPermissions(selectedFile.getId());
+        } catch (IOException e) {
+                throw new RuntimeException(e);
+        }
+        permissions.setAll(permissionsList);
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.minStork.Stork.data.FileEntity;
 import com.minStork.Stork.data.FilePermissionInfoDto;
 import com.minStork.Stork.data.FileRepository;
+import com.minStork.Stork.data.PermissionDto;
 import com.minStork.Stork.data.PermissionEntity;
 import com.minStork.Stork.data.UserEntity;
 import com.minStork.Stork.services.PermissionService;
@@ -51,25 +52,30 @@ public class PermissionController {
     }
 
     @GetMapping("/file/{id}")
-    public List<PermissionEntity> getFilePermissions(@PathVariable Long id) {
-        return permissionService.getFilePermissions(id);
+    public ResponseEntity<List<PermissionDto>> getFilePermissions(@PathVariable Long id, HttpServletRequest request) {
+        List<PermissionEntity> permissions = permissionService.getFilePermissions(id);
+        List<PermissionDto> result = new ArrayList<>();
+        for (PermissionEntity permission : permissions) {
+            result.add(new PermissionDto(permission.getUser().getId(), permission.getUser().getUsername(), permission.getPermissionType()));
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/grant")
-    public ResponseEntity<?> grantPermission(@RequestBody PermissionEntity permission) {
-        permissionService.grantPermission(permission);
+    public ResponseEntity<?> grantPermission(@RequestBody PermissionDto permission) {
+        permissionService.grantPermission(permission.getUserId(), permission.getUsername(), permission.getPermission());
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updatePermission(@RequestBody PermissionEntity permission) {
-
+    public ResponseEntity<?> updatePermission(@RequestBody PermissionDto permission) {
+        permissionService.updatePermission(permission.getUserId(), permission.getUsername(), permission.getPermission());
         return ResponseEntity.ok().build();
     } 
 
     @DeleteMapping("/revoke")
-    public ResponseEntity<?> revokePermission(@RequestBody PermissionEntity permission) {
-        permissionService.revokePermission(permission);
+    public ResponseEntity<?> revokePermission(@RequestBody PermissionDto permission) {
+        permissionService.revokePermission(permission.getUserId(), permission.getUsername());
         return ResponseEntity.ok().build();
     }
 }

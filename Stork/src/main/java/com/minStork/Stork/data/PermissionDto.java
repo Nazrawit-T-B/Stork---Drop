@@ -1,20 +1,20 @@
-package model;
+package com.minStork.Stork.data;
 
-public class PermissionModel {
+public class PermissionDto {
     private Long userId;
     private String username;
     private PermissionType permission;
 
-    public PermissionModel() {
-        
+    public PermissionDto() {
+
     }
 
-    public PermissionModel(Long userId, String username, PermissionType permission) {
+    public PermissionDto(Long userId, String username, PermissionType permission) {
         this.userId = userId;
         this.username = username;
         this.permission = permission;
     }
-
+    
     public Long getUserId() {
         return userId;
     }
