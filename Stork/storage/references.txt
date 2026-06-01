@@ -1,0 +1,5 @@
+[1] 	A. S. Tanenbaum and H. Bos, Modern Operating Systems, Global Edition. Pearson Higher Ed, 2023.
+[2]	A. Silberschatz, P. B. Galvin, and G. Gagne, Operating system concepts. 2018.
+[3]	W. Stallings, Operating systems: Internals and Design Principles, Global Edition. Pearson Higher Education, 2017.
+[4]       M.Rosenblum and J.Ousterhout, “The design and implementation of a log-structured file system,” ACM Trans. Comput. Syst., vol 10 , no.1, pp.26-52, Feb. 1992.
+[5]     John K. Ousterhout, Herve Da Costa, David Harrison, John A. Kunze, Mike Kupfer, and James G. Thompson, ‘‘A Trace-Driven Analysis of the Unix 4.2 BSD File System,’’ Proceedings of the 10th Symposium on Operating Systems Principles, pp. 15-24 ACM, (1985)
