@@ -1,5 +1,9 @@
 package ui;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -455,12 +459,17 @@ public class Permissions {
     }
 
     private static void loadFiles() {
+        List<FileModel> files = new ArrayList<>();
+        try {
+                files = permissionService.getAvailableFiles();
+        } catch(IOException e) {
+                throw new RuntimeException(e);
+        }
 
         fileSelector
                 .getItems()
                 .setAll(
-                        permissionService
-                                .getAvailableFiles()
+                        files
                 );
 
         if (

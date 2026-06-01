@@ -1,23 +1,38 @@
 package service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import model.FileModel;
 import model.PermissionModel;
 import model.PermissionType;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import ui.SessionManager;
 
 public class PermissionService {
 
-    public List<FileModel> getAvailableFiles() {
+    public List<FileModel> getAvailableFiles() throws IOException {
+        List<FileModel> files = new ArrayList<>();
+        URL url=new URL("http://localhost:8080/api/permissions/owned");
+        HttpURLConnection connection=(HttpURLConnection) url.openConnection();
 
-        // TODO
-        // Request files from server
-
-        return List.of(
-                new FileModel(1L, "report.docx", "Alice"),
-                new FileModel(2L, "budget.xlsx", "Bob"),
-                new FileModel(3L, "notes.txt", "Charlie")
-        );
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization","Bearer "+ SessionManager.getActiveToken());
+        try {
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStream inputStream = connection.getInputStream();
+                        ObjectMapper mapper = new ObjectMapper();
+                        files = mapper.readValue(inputStream, new TypeReference<List<FileModel>>(){});
+                }
+        } finally {
+                connection.disconnect();
+        }
+        return files;
     }
 
     public List<PermissionModel> getPermissions(
