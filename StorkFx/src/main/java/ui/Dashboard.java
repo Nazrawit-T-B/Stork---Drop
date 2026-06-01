@@ -65,8 +65,8 @@ public class Dashboard {
   
     public static StackPane createTopHeroBanner() {
         // Left Side: Bold Title text layout
-        Label brandTitle = new Label("Stork Drop");
-        brandTitle.setStyle("-fx-font-size: 42; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 1px;");
+        Label brandTitle = new Label("Sync & Activity");
+        brandTitle.setStyle("-fx-font-size: 35 ; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 1px;");
 
         VBox textLayout = new VBox(brandTitle);
         textLayout.setAlignment(Pos.CENTER_LEFT);
@@ -87,50 +87,8 @@ public class Dashboard {
         StackPane.setAlignment(storkLogoView, Pos.CENTER_RIGHT);
         StackPane.setMargin(storkLogoView, new Insets(0, 32, 0, 0));
 
-        StackPane notificationContainer = new StackPane();
-        FontIcon bellIcon = new FontIcon("fas-bell");
-        bellIcon.getStyleClass().add("notif-icon");
-        bellIcon.setStyle("-fx-icon-color: white; -fx-icon-size: 18;");
-        
-        notificationBadge.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-size: 9; " +
-                "-fx-font-weight: bold; -fx-padding: 2 5 2 5; -fx-background-radius: 10;");
-        notificationBadge.setVisible(false);
-        StackPane.setAlignment(notificationBadge, Pos.TOP_RIGHT);
-        StackPane.setMargin(notificationBadge, new Insets(-4, -4, 0, 0));
-        notificationContainer.getChildren().addAll(bellIcon, notificationBadge);
-        notificationContainer.setCursor(javafx.scene.Cursor.HAND);
-
-        notificationContainer.setOnMouseClicked(e -> {
-            ContextMenu notifMenu = new ContextMenu();
-            if (runtimeNotifications.isEmpty()) {
-                notifMenu.getItems().add(new MenuItem("No active network events"));
-            } else {
-                for (String alert : runtimeNotifications) {
-                    MenuItem item = new MenuItem(alert);
-                    item.setOnAction(evt -> {
-                        runtimeNotifications.remove(alert);
-                        int count = runtimeNotifications.size();
-                        notificationBadge.setText(String.valueOf(count));
-                        notificationBadge.setVisible(count > 0);
-                    });
-                    notifMenu.getItems().add(item);
-                }
-                notifMenu.getItems().add(new SeparatorMenuItem());
-                MenuItem clearAll = new MenuItem("Clear All");
-                clearAll.setOnAction(evt -> {
-                    runtimeNotifications.clear();
-                    notificationBadge.setVisible(false);
-                });
-                notifMenu.getItems().add(clearAll);
-            }
-            notifMenu.show(notificationContainer, e.getScreenX(), e.getScreenY());
-        });
-
-        StackPane.setAlignment(notificationContainer, Pos.TOP_RIGHT);
-        StackPane.setMargin(notificationContainer, new Insets(20, 20, 0, 0));
-
         // High-end background gradient profile match
-        StackPane heroBanner = new StackPane(textLayout, storkLogoView, notificationContainer);
+        StackPane heroBanner = new StackPane(textLayout, storkLogoView);
         heroBanner.setPrefHeight(160); // Enlarged container frame footprint height
         heroBanner.setStyle("-fx-background-color: linear-gradient(to right, #1E293B, #0F172A); -fx-background-radius: 12;");
         

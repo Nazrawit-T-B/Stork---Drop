@@ -3,12 +3,16 @@ package ui;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class Sidebar {
@@ -48,7 +52,17 @@ public class Sidebar {
         btnFiles.setToggleGroup(group); btnFiles.setGraphic(filesIcon); btnFiles.getStyleClass().add("nav-button");
         btnFiles.setOnAction(e -> {
             BorderPane mainArea = new BorderPane();
-            mainArea.setTop(FilesUI.FilesHeader()); mainArea.setCenter(FilesUI.Area());
+            mainArea.setTop(FilesUI.createTopHeroBanner());
+            VBox contentLayout = new VBox(20);
+            contentLayout.setPadding(new Insets(20, 0, 0, 0)); // Clean spacing gap split separating the top banner and content body
+
+            VBox filesPane = FilesUI.Area();
+            VBox.setVgrow(filesPane, Priority.ALWAYS);
+            contentLayout.getChildren().add(filesPane);
+            mainArea.setCenter(contentLayout);
+            mainArea.setPadding(new Insets(24));
+
+
             root.setCenter(mainArea);
         });
 
@@ -97,8 +111,8 @@ public class Sidebar {
         }
 
         // CARDS & CAROUSELS
-        VBox storageCard = createStorageCard();
-        VBox.setMargin(storageCard, new Insets(10, 0, 0, 0));
+
+
         VBox promoCard = createPromoCard();
         VBox.setMargin(promoCard, new Insets(10, 0, 0, 0));
         Region spacer = new Region();
@@ -110,7 +124,7 @@ public class Sidebar {
         
         sidebar.getChildren().addAll(
             btnSync, btnFiles, btnPermission, btnHistory, btnAuth, 
-            storageCard, promoCard, spacer, profile
+            promoCard, spacer, profile
         );
         
         sidebar.getStylesheets().add("sidebar.css");
@@ -137,19 +151,114 @@ public class Sidebar {
         return profile;
     }
 
-    private static VBox createStorageCard() { 
-        VBox card = new VBox(10); card.getStyleClass().add("storage-card"); card.setPadding(new Insets(15)); 
-        Label title = new Label("Storage"); title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13;"); 
-        Label stats = new Label("42.8 GB of 100 GB used"); stats.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 11;"); 
-        ProgressBar pb = new ProgressBar(0.42); pb.setMaxWidth(Double.MAX_VALUE); pb.setPrefHeight(6); 
-        card.getChildren().addAll(title, stats, pb); return card; 
-    }
     
     private static VBox createPromoCard() { 
         VBox card = new VBox(12); card.getStyleClass().add("promo-card"); card.setAlignment(Pos.CENTER); card.setPadding(new Insets(20)); 
-        FontIcon cloudIcon = new FontIcon("mdi2r-refresh"); cloudIcon.setIconSize(40); cloudIcon.setIconColor(Color.WHITE); 
+        FontIcon cloudIcon = new FontIcon("mdi2c-cloud-lock"); cloudIcon.setIconSize(40); cloudIcon.setIconColor(Color.WHITE);
         Label promoText = new Label("Keep your files safe"); promoText.setStyle("-fx-text-fill: white; -fx-font-weight: bold;"); 
-        Button learnMore = new Button("Learn more →"); learnMore.setStyle("-fx-background-color: transparent; -fx-text-fill: #94A3B8; -fx-font-size: 11;"); 
+        Button learnMore = new Button("Learn more →"); learnMore.setStyle("-fx-background-color: transparent; -fx-text-fill: #94A3B8; -fx-font-size: 11;");
+        learnMore.setOnAction(e->{
+            showCloudBackupInfoDialog();
+        });
         card.getChildren().addAll(cloudIcon, promoText, learnMore); return card; 
+    }
+    private static void showCloudBackupInfoDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+        dialog.setResizable(false);
+
+
+        StackPane iconWrap = new StackPane();
+        iconWrap.setMinSize(64, 64);
+        iconWrap.setMaxSize(64, 64);
+        iconWrap.setStyle(
+                "-fx-background-color: rgba(56,130,221,0.15);" +
+                        "-fx-background-radius: 16;" +
+                        "-fx-border-color: rgba(99,155,235,0.3);" +
+                        "-fx-border-radius: 16;" +
+                        "-fx-border-width: 1;"
+        );
+        FontIcon icon = new FontIcon("mdi2c-cloud-lock");
+        icon.setIconSize(28);
+        icon.setIconColor(Color.web("#7ab4f0"));
+        iconWrap.getChildren().add(icon);
+
+
+        Label title = new Label("Keep your files safe");
+        title.setStyle(
+                "-fx-text-fill: #e2eaf6;" +
+                        "-fx-font-size: 17;" +
+                        "-fx-font-weight: bold;"
+        );
+
+        // Body
+        Label body = new Label(
+                "Your files are automatically encrypted and backed up\n" +
+                        "to the cloud. Access them from anywhere, anytime —\n" +
+                        "nothing gets lost."
+        );
+        body.setStyle("-fx-text-fill: #7a93b4; -fx-font-size: 13;");
+        body.setAlignment(Pos.CENTER);
+        body.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        // Divider
+
+
+        // Buttons
+        Button dismiss = new Button("Dismiss");
+        dismiss.setPrefWidth(120);
+        dismiss.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-border-color: rgba(99,155,235,0.25);" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-text-fill: #7a93b4;" +
+                        "-fx-font-size: 13;" +
+                        "-fx-padding: 10 0;"
+        );
+
+        Button gotIt = new Button("Got it");
+        gotIt.setPrefWidth(120);
+        gotIt.setStyle(
+                "-fx-background-color: rgba(56,130,221,0.2);" +
+                        "-fx-border-color: rgba(99,155,235,0.4);" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-text-fill: #7ab4f0;" +
+                        "-fx-font-size: 13;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-padding: 10 0;"
+        );
+
+        dismiss.setOnAction(e -> dialog.close());
+        gotIt.setOnAction(e -> dialog.close());
+
+        HBox buttons = new HBox(10, dismiss, gotIt);
+        buttons.setAlignment(Pos.CENTER);
+
+        // Layout
+        VBox layout = new VBox(0);
+        layout.setAlignment(Pos.CENTER);
+        layout.setPadding(new Insets(32, 32, 24, 32));
+        layout.setStyle(
+                "-fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b, #0f2744);" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-border-color: rgba(99,155,235,0.18);" +
+                        "-fx-border-radius: 20;" +
+                        "-fx-border-width: 0.5;"
+        );
+
+        VBox.setMargin(iconWrap,  new Insets(0, 0, 20, 0));
+        VBox.setMargin(title,     new Insets(0, 0, 8, 0));
+        VBox.setMargin(body,      new Insets(0, 0, 24, 0));
+
+
+        layout.getChildren().addAll(iconWrap, title, body, buttons);
+
+        Scene scene = new Scene(layout, 400, 300);
+        scene.setFill(Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.show();
     }
 }

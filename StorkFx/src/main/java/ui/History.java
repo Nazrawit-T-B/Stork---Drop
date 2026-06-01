@@ -4,6 +4,8 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -32,7 +34,38 @@ public class History {
         return header;
     }
 
-    // FILE HEADER CARD — dynamic
+    public static StackPane createTopHeroBanner() {
+        Label brandTitle = new Label("History");
+        brandTitle.setStyle("-fx-font-size: 35 ; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 1px;");
+        Label subdesc=new Label("Access different Versions");
+        subdesc.setStyle("-fx-text-fill:white; -fx-letter-spacing: 2px; ");
+
+        VBox textLayout = new VBox(brandTitle, subdesc);
+        textLayout.setAlignment(Pos.CENTER_LEFT);
+        textLayout.setPadding(new Insets(0, 0, 0, 32));
+
+        ImageView storkLogoView = new ImageView();
+        try {
+            Image image = new Image(Dashboard.class.getResourceAsStream("/img_2.png"));
+            storkLogoView.setImage(image);
+            storkLogoView.setFitWidth(160);
+            storkLogoView.setPreserveRatio(true);
+            storkLogoView.setSmooth(true);
+        } catch (Exception e) {
+
+        }
+
+        StackPane.setAlignment(textLayout, Pos.CENTER_LEFT);
+        StackPane.setAlignment(storkLogoView, Pos.CENTER_RIGHT);
+        StackPane.setMargin(storkLogoView, new Insets(0, 32, 0, 0));
+
+
+        StackPane heroBanner = new StackPane(textLayout, storkLogoView);
+        heroBanner.setPrefHeight(160);
+        heroBanner.setStyle("-fx-background-color: linear-gradient(to right, #1E293B, #0F172A); -fx-background-radius: 12;");
+
+        return heroBanner;
+    }
     public static HBox fileHeaderCard(String masterFilename, String meta) {
         HBox card = new HBox(20);
         card.getStyleClass().add("card");
@@ -315,20 +348,21 @@ public class History {
         return row;
     }
 
-    // MAIN PAGE
-    public static BorderPane historyPage() {
-        BorderPane root = new BorderPane();
-        root.setTop(historyHeader());
 
+    public static BorderPane historyPage() {
+        BorderPane mainArea = new BorderPane();
+        mainArea.setTop(createTopHeroBanner());
+        VBox contentLayout = new VBox(20);
+        contentLayout.setPadding(new Insets(20, 0, 0, 0)); // Clean spacing gap split separating the top banner and content body
         VBox center = new VBox(24);
         center.setPadding(new Insets(24));
+        VBox filesPane = versionHistoryCard(center);
+        VBox.setVgrow(filesPane, Priority.ALWAYS);
 
         HBox headerCard = fileHeaderCard("No file selected", "Select a file from the dropdown");
-        VBox versionCard = versionHistoryCard(center);
-
-        center.getChildren().addAll(headerCard, versionCard);
-        root.setCenter(center);
-
-        return root;
+        contentLayout.getChildren().addAll(headerCard, filesPane);
+        mainArea.setCenter(contentLayout);
+        mainArea.setPadding(new Insets(24));
+        return mainArea;
     }
 }

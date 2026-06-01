@@ -8,10 +8,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ui.Dashboard;
-import service.FileTransferService; // 🆕 Added missing import
+import service.FileTransferService;
 
-import static ui.FilesUI.Area;
-import static ui.FilesUI.FilesHeader;
 import static ui.Sidebar.createsidebar;
 
 import java.util.List;

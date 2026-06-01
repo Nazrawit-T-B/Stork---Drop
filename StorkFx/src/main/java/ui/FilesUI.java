@@ -5,6 +5,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -38,48 +40,41 @@ public class FilesUI {
         public SimpleStringProperty lastModifiedProperty() { return lastModified; }
     }
 
-    public static HBox FilesHeader() {
-        Label label = new Label("Files");
-        label.getStyleClass().add("page-title");
+    public static StackPane createTopHeroBanner() {
+        Label brandTitle = new Label("Files");
+        brandTitle.setStyle("-fx-font-size: 35 ; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 1px;");
+        Label subdesc=new Label("Manage your workspace");
+        subdesc.setStyle("-fx-text-fill:white; -fx-letter-spacing: 2px; ");
 
-        TextField search = new TextField();
-        search.setPromptText("Search files or folders...");
-        search.getStyleClass().add("search-field");
-        search.setPrefWidth(260);
+        VBox textLayout = new VBox(brandTitle, subdesc);
+        textLayout.setAlignment(Pos.CENTER_LEFT);
+        textLayout.setPadding(new Insets(0, 0, 0, 32));
 
-        FontIcon searchIcon = new FontIcon("fas-search");
-        searchIcon.getStyleClass().add("search-icon");
-        HBox searchBox = new HBox(8, searchIcon, search);
-        searchBox.getStyleClass().add("search-box");
-        searchBox.setAlignment(Pos.CENTER_LEFT);
+        ImageView storkLogoView = new ImageView();
+        try {
+            Image image = new Image(Dashboard.class.getResourceAsStream("/img_2.png"));
+            storkLogoView.setImage(image);
+            storkLogoView.setFitWidth(160);
+            storkLogoView.setPreserveRatio(true);
+            storkLogoView.setSmooth(true);
+        } catch (Exception e) {
 
-        bellIcon.getStyleClass().add("notif-icon");
+        }
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        StackPane.setAlignment(textLayout, Pos.CENTER_LEFT);
+        StackPane.setAlignment(storkLogoView, Pos.CENTER_RIGHT);
+        StackPane.setMargin(storkLogoView, new Insets(0, 32, 0, 0));
 
-        HBox header = new HBox(16);
-        header.getStyleClass().add("top-bar");
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.getChildren().addAll(label, spacer, searchBox, bellIcon);
 
-        return header;
+        StackPane heroBanner = new StackPane(textLayout, storkLogoView);
+        heroBanner.setPrefHeight(160);
+        heroBanner.setStyle("-fx-background-color: linear-gradient(to right, #1E293B, #0F172A); -fx-background-radius: 12;");
+
+        return heroBanner;
     }
-
     public static VBox Area() {
         VBox main = new VBox(20);
         main.setPadding(new Insets(24));
-
-        Label welcome = new Label("Welcome");
-        welcome.getStyleClass().add("welcome-label");
-        Label desc = new Label("Manage your cloud workspace and collaborate in real-time");
-        desc.getStyleClass().add("desc-label");
-
-        HBox allfiles = new HBox();
-        allfiles.setPadding(new Insets(10,0,0,0));
-        Label afileslabel = new Label("All Files");
-        afileslabel.getStyleClass().add("all-files-label");
-        allfiles.getChildren().addAll(afileslabel);
 
         TableView<FileEntry> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -100,8 +95,7 @@ public class FilesUI {
             private final Hyperlink dellink = new Hyperlink("Delete");
             private final Hyperlink link = new Hyperlink("Download"); {
                 dellink.setStyle("-fx-text-fill: red");
-                
-                // 📂 DOWNLOAD RESOLUTION: Let users explicitly choose where downloaded files go
+
                 link.setOnAction(e -> {
                     FileEntry entry = getTableView().getItems().get(getIndex());
                     String filename = entry.nameProperty().get();
@@ -183,7 +177,7 @@ public class FilesUI {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.getChildren().add(upload);
 
-        main.getChildren().addAll(welcome, desc, allfiles, table, buttonBox);
+        main.getChildren().addAll(table, buttonBox);
         return main;
     }
 
