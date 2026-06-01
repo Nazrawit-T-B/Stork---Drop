@@ -6,10 +6,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
 import service.FileTransferService;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +33,7 @@ public class History {
     }
 
     // FILE HEADER CARD — dynamic
-    public static HBox fileHeaderCard(String filename, String meta) {
+    public static HBox fileHeaderCard(String masterFilename, String meta) {
         HBox card = new HBox(20);
         card.getStyleClass().add("card");
         card.setPadding(new Insets(24));
@@ -50,7 +52,7 @@ public class History {
         HBox topRow = new HBox(10);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
-        Label fileName = new Label(filename);
+        Label fileName = new Label(masterFilename);
         fileName.getStyleClass().add("history-file-title");
 
         Label currentBadge = new Label("CURRENT");
@@ -74,17 +76,44 @@ public class History {
         Button downloadBtn = new Button("Download Latest");
         downloadBtn.setGraphic(downloadIcon);
         downloadBtn.getStyleClass().add("history-download-btn");
+        
+        // Disable by default if no genuine selection is present
+        if ("No file selected".equals(masterFilename)) {
+            downloadBtn.setDisable(true);
+        }
+
+        // 📂 DOWNLOAD RESOLUTION: Run FileChooser safely on UI thread loop
         downloadBtn.setOnAction(e -> {
-            Thread t = new Thread(() -> {
-                FileTransferService service = new FileTransferService();
-                try {
-                    service.downloadFromServer(filename);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            t.setDaemon(true);
-            t.start();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Latest File Version");
+            fileChooser.setInitialFileName(masterFilename);
+            
+            Stage stage = (Stage) downloadBtn.getScene().getWindow();
+            File dest = fileChooser.showSaveDialog(stage);
+            
+            if (dest != null) {
+                downloadBtn.setDisable(true);
+                downloadBtn.setText("Downloading...");
+                
+                Thread t = new Thread(() -> {
+                    FileTransferService service = new FileTransferService();
+                    try {
+                        service.downloadFromServer(masterFilename, dest);
+                        Platform.runLater(() -> {
+                            downloadBtn.setText("Downloaded");
+                            downloadBtn.setDisable(false);
+                        });
+                    } catch (IOException ex) {
+                        Platform.runLater(() -> {
+                            downloadBtn.setText("Download Failed");
+                            downloadBtn.setDisable(false);
+                        });
+                        ex.printStackTrace();
+                    }
+                });
+                t.setDaemon(true);
+                t.start();
+            }
         });
 
         actions.getChildren().add(downloadBtn);
@@ -99,18 +128,16 @@ public class History {
         card.getStyleClass().add("card");
         card.setPadding(new Insets(22));
 
-        // TOP ROW
         HBox topRow = new HBox(16);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         Label title = new Label("Version History");
         title.getStyleClass().add("section-title");
 
-        // DROPDOWN
         ComboBox<String> fileDropdown = new ComboBox<>();
         fileDropdown.setPromptText("Select a file...");
 
-        // populate dropdown
+        // Populate dropdown from backend registry pipeline
         Thread loadThread = new Thread(() -> {
             FileTransferService service = new FileTransferService();
             try {
@@ -128,13 +155,12 @@ public class History {
 
         topRow.getChildren().addAll(title, spacer, fileDropdown);
 
-        // VERSIONS LIST
         VBox versions = new VBox();
         Label placeholder = new Label("Select a file to view its version history");
         placeholder.getStyleClass().add("activity-time");
         versions.getChildren().add(placeholder);
 
-        // on file selected
+        // Dropdown actions execution block
         fileDropdown.setOnAction(e -> {
             String selected = fileDropdown.getValue();
             if (selected == null) return;
@@ -144,7 +170,6 @@ public class History {
             loading.getStyleClass().add("activity-time");
             versions.getChildren().add(loading);
 
-            // update file header card
             pageRoot.getChildren().set(0, fileHeaderCard(selected, "Loading..."));
 
             Thread t = new Thread(() -> {
@@ -159,20 +184,22 @@ public class History {
                             return;
                         }
 
-                        // update header with real meta
                         Map<String, String> latest = versionList.get(0);
                         String meta = latest.get("size") + "   •   Uploaded " + latest.get("uploadedAt");
                         pageRoot.getChildren().set(0, fileHeaderCard(selected, meta));
 
                         for (int i = 0; i < versionList.size(); i++) {
                             Map<String, String> v = versionList.get(i);
+                            
+                            // pass selected master filename down to guarantee server maps it correctly
                             versions.getChildren().add(createVersionRow(
                                     "Version " + v.get("version"),
                                     v.get("uploadedAt"),
                                     v.get("size"),
-                                    i==0,
+                                    i == 0,
                                     null,
-                                    v.get("filename")
+                                    v.get("filename"),
+                                    selected 
                             ));
                         }
                     });
@@ -183,6 +210,7 @@ public class History {
                         error.setStyle("-fx-text-fill: red;");
                         versions.getChildren().add(error);
                     });
+                    ex.printStackTrace();
                 }
             });
             t.setDaemon(true);
@@ -193,9 +221,9 @@ public class History {
         return card;
     }
 
-    // VERSION ROW
+    // VERSION ROW — Track both physical storage tracking name AND master name
     private static HBox createVersionRow(
-            String version, String date, String size, boolean current, String note,String filename) {
+            String version, String date, String size, boolean current, String note, String storageFilename, String masterFilename) {
 
         HBox row = new HBox(18);
         row.getStyleClass().add("history-version-row");
@@ -230,12 +258,10 @@ public class History {
 
         leftInfo.setPrefWidth(320);
 
-        // SIZE
         Label sizeLabel = new Label(size);
         sizeLabel.getStyleClass().add("activity-detail");
         sizeLabel.setPrefWidth(100);
 
-        // ACTIONS
         HBox actions = new HBox(24);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
@@ -244,19 +270,40 @@ public class History {
         Button downloadBtn = new Button();
         downloadBtn.setGraphic(downloadIcon);
         downloadBtn.getStyleClass().add("icon-btn");
+        
+        // 📂 DOWNLOAD RESOLUTION: UI-thread file selector intercept
         downloadBtn.setOnAction(e -> {
-            Thread t = new Thread(() -> {
-                FileTransferService service = new FileTransferService();
-                try {
-                    service.downloadFromServer(filename);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-            t.setDaemon(true);
-            t.start();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Historical File Version");
+            fileChooser.setInitialFileName(storageFilename);
+            
+            Stage stage = (Stage) downloadBtn.getScene().getWindow();
+            File dest = fileChooser.showSaveDialog(stage);
+            
+            if (dest != null) {
+                downloadBtn.setDisable(true);
+                
+                Thread t = new Thread(() -> {
+                    FileTransferService service = new FileTransferService();
+                    try {
+                        // Pass storage path filename directly to point explicitly to historical binaries
+                        service.downloadFromServer(storageFilename, dest);
+                        Platform.runLater(() -> {
+                            downloadBtn.setDisable(false);
+                            downloadIcon.setIconColor(Color.web("#10B981")); // Turn green on success
+                        });
+                    } catch (IOException ex) {
+                        Platform.runLater(() -> {
+                            downloadBtn.setDisable(false);
+                            downloadIcon.setIconColor(Color.web("#EF4444")); // Turn red on error
+                        });
+                        ex.printStackTrace();
+                    }
+                });
+                t.setDaemon(true);
+                t.start();
+            }
         });
-
 
         actions.getChildren().addAll(downloadBtn);
 
@@ -276,7 +323,6 @@ public class History {
         VBox center = new VBox(24);
         center.setPadding(new Insets(24));
 
-        // placeholder header card until file is selected
         HBox headerCard = fileHeaderCard("No file selected", "Select a file from the dropdown");
         VBox versionCard = versionHistoryCard(center);
 
