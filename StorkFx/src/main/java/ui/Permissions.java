@@ -1,7 +1,5 @@
 package ui;
 
-import java.util.List;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,7 +18,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import model.FileModel;
 import model.PermissionModel;
+import model.PermissionType;
 import service.PermissionService;
 
 public class Permissions {
@@ -28,12 +28,14 @@ public class Permissions {
     private static final PermissionService permissionService =
             new PermissionService();
 
-    private static final ObservableList<PermissionModel> permissions =
+    private static final ObservableList<PermissionModel>
+            permissions =
             FXCollections.observableArrayList();
 
-    private static Long currentFileId;
+    private static FileModel selectedFile;
 
-    private static Label selectedFileLabel;
+    private static ComboBox<FileModel> fileSelector;
+
     private static Label ownerLabel;
 
     public static BorderPane permissionsPage() {
@@ -52,43 +54,82 @@ public class Permissions {
 
         root.setCenter(content);
 
+        loadFiles();
+
         return root;
     }
 
     private static HBox permissionsHeader() {
 
-        Label title = new Label("Permissions");
-        title.getStyleClass().add("page-title");
+        Label title =
+                new Label("Permissions");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        title.getStyleClass()
+                .add("page-title");
 
-        HBox header = new HBox(20);
-        header.setAlignment(Pos.CENTER_LEFT);
+        Region spacer =
+                new Region();
 
-        header.getChildren().addAll(
+        HBox.setHgrow(
+                spacer,
+                Priority.ALWAYS
+        );
+
+        return new HBox(
+                20,
                 title,
                 spacer
         );
-
-        return header;
     }
 
     private static VBox fileInfoCard() {
 
-        VBox card = new VBox(8);
+        VBox card =
+                new VBox(10);
 
-        card.getStyleClass().add("card");
-        card.setPadding(new Insets(20));
+        card.getStyleClass()
+                .add("card");
 
-        selectedFileLabel =
-                new Label("Selected File: None");
+        card.setPadding(
+                new Insets(20)
+        );
+
+        Label fileLabel =
+                new Label(
+                        "Selected File"
+                );
+
+        fileSelector =
+                new ComboBox<>();
+
+        fileSelector.setPrefWidth(
+                350
+        );
 
         ownerLabel =
-                new Label("Owner: Unknown");
+                new Label(
+                        "Owner: -"
+                );
+
+        fileSelector.setOnAction(e -> {
+
+            selectedFile =
+                    fileSelector.getValue();
+
+            if (selectedFile != null) {
+
+                ownerLabel.setText(
+                        "Owner: "
+                                + selectedFile.getOwner()
+                );
+
+                refreshPermissions();
+            }
+        });
 
         card.getChildren().addAll(
-                selectedFileLabel,
+                fileLabel,
+                fileSelector,
                 ownerLabel
         );
 
@@ -97,116 +138,176 @@ public class Permissions {
 
     private static VBox permissionsTableCard() {
 
-        VBox card = new VBox(15);
+        VBox card =
+                new VBox(15);
 
-        card.getStyleClass().add("card");
-        card.setPadding(new Insets(20));
+        card.getStyleClass()
+                .add("card");
 
-        Label title = new Label("Current Access");
-        title.getStyleClass().add("section-title");
+        card.setPadding(
+                new Insets(20)
+        );
+
+        Label title =
+                new Label(
+                        "Current Access"
+                );
+
+        title.getStyleClass()
+                .add("section-title");
 
         TableView<PermissionModel> table =
                 new TableView<>();
 
-        table.setItems(permissions);
+        table.setItems(
+                permissions
+        );
 
-        TableColumn<PermissionModel, String> userColumn =
+        TableColumn<
+                PermissionModel,
+                String
+                > userColumn =
                 new TableColumn<>("User");
 
         userColumn.setCellValueFactory(
-                data -> new SimpleStringProperty(
-                        data.getValue().getUsername()
-                )
+                data ->
+                        new SimpleStringProperty(
+                                data.getValue()
+                                        .getUsername()
+                        )
         );
 
-        userColumn.setPrefWidth(250);
-
-        TableColumn<PermissionModel, String> permissionColumn =
+        TableColumn<
+                PermissionModel,
+                String
+                > permissionColumn =
                 new TableColumn<>("Permission");
 
         permissionColumn.setCellValueFactory(
-                data -> new SimpleStringProperty(
-                        data.getValue().getPermission().toString()
-                )
+                data ->
+                        new SimpleStringProperty(
+                                data.getValue()
+                                        .getPermission()
+                                        .name()
+                        )
         );
 
-        permissionColumn.setPrefWidth(150);
-
-        TableColumn<PermissionModel, Void> actionColumn =
+        TableColumn<
+                PermissionModel,
+                Void
+                > actionColumn =
                 new TableColumn<>("Actions");
 
-        actionColumn.setPrefWidth(250);
+        actionColumn.setCellFactory(
+                col ->
+                        new TableCell<>() {
 
-        actionColumn.setCellFactory(col -> new TableCell<>() {
+                            private final Button editBtn =
+                                    new Button(
+                                            "Edit"
+                                    );
 
-            private final Button editBtn =
-                    new Button("Edit");
+                            private final Button removeBtn =
+                                    new Button(
+                                            "Remove"
+                                    );
 
-            private final Button removeBtn =
-                    new Button("Remove");
+                            private final HBox controls =
+                                    new HBox(
+                                            8,
+                                            editBtn,
+                                            removeBtn
+                                    );
 
-            private final HBox container =
-                    new HBox(8, editBtn, removeBtn);
+                            {
 
-            {
+                                controls.setAlignment(
+                                        Pos.CENTER
+                                );
 
-                container.setAlignment(Pos.CENTER);
+                                editBtn.setOnAction(
+                                        e -> {
 
-                editBtn.setOnAction(event -> {
+                                            PermissionModel permission =
+                                                    getTableView()
+                                                            .getItems()
+                                                            .get(
+                                                                    getIndex()
+                                                            );
 
-                    PermissionModel permission =
-                            getTableView()
-                                    .getItems()
-                                    .get(getIndex());
+                                            showEditDialog(
+                                                    permission
+                                            );
+                                        }
+                                );
 
-                    showEditPermissionDialog(permission);
-                });
+                                removeBtn.setOnAction(
+                                        e -> {
 
-                removeBtn.setOnAction(event -> {
+                                            PermissionModel permission =
+                                                    getTableView()
+                                                            .getItems()
+                                                            .get(
+                                                                    getIndex()
+                                                            );
 
-                    PermissionModel permission =
-                            getTableView()
-                                    .getItems()
-                                    .get(getIndex());
+                                            permissionService
+                                                    .revokeAccess(
+                                                            selectedFile.getId(),
+                                                            permission.getUsername()
+                                                    );
 
-                    permissionService.revokeAccess(
-                            currentFileId,
-                            permission.getUsername()
-                    );
+                                            refreshPermissions();
+                                        }
+                                );
+                            }
 
-                    refreshPermissions();
-                });
-            }
+                            @Override
+                            protected void updateItem(
+                                    Void item,
+                                    boolean empty
+                            ) {
 
-            @Override
-            protected void updateItem(
-                    Void item,
-                    boolean empty
-            ) {
+                                super.updateItem(
+                                        item,
+                                        empty
+                                );
 
-                super.updateItem(item, empty);
+                                if (empty) {
 
-                if (empty) {
-                    setGraphic(null);
-                    return;
-                }
+                                    setGraphic(
+                                            null
+                                    );
 
-                PermissionModel permission =
-                        getTableView()
-                                .getItems()
-                                .get(getIndex());
+                                    return;
+                                }
 
-                if ("OWNER".equals(
-                        permission.getPermission().name()
-                )) {
+                                PermissionModel permission =
+                                        getTableView()
+                                                .getItems()
+                                                .get(
+                                                        getIndex()
+                                                );
 
-                    setGraphic(new Label("-"));
-                } else {
+                                if (
+                                        permission.getPermission()
+                                                ==
+                                                PermissionType.OWNER
+                                ) {
 
-                    setGraphic(container);
-                }
-            }
-        });
+                                    setGraphic(
+                                            new Label("-")
+                                    );
+
+                                } else {
+
+                                    setGraphic(
+                                            controls
+                                    );
+                                }
+                            }
+                        }
+        );
 
         table.getColumns().addAll(
                 userColumn,
@@ -224,59 +325,77 @@ public class Permissions {
 
     private static VBox shareCard() {
 
-        VBox card = new VBox(15);
+        VBox card =
+                new VBox(15);
 
-        card.getStyleClass().add("card");
-        card.setPadding(new Insets(20));
+        card.getStyleClass()
+                .add("card");
 
-        Label title = new Label("Share File");
-        title.getStyleClass().add("section-title");
+        card.setPadding(
+                new Insets(20)
+        );
 
-        Label usernameLabel =
-                new Label("Username");
+        Label title =
+                new Label(
+                        "Share File"
+                );
+
+        title.getStyleClass()
+                .add("section-title");
 
         TextField usernameField =
                 new TextField();
 
         usernameField.setPromptText(
-                "Enter username"
+                "Username"
         );
 
-        Label permissionLabel =
-                new Label("Permission");
-
-        ComboBox<String> permissionBox =
+        ComboBox<PermissionType>
+                permissionBox =
                 new ComboBox<>();
 
-        permissionBox.getItems().addAll(
-                "READ",
-                "WRITE"
-        );
+        permissionBox
+                .getItems()
+                .addAll(
+                        PermissionType.READ,
+                        PermissionType.WRITE
+                );
 
-        permissionBox.setValue("READ");
+        permissionBox.setValue(
+                PermissionType.READ
+        );
 
         Button grantBtn =
-                new Button("Grant Access");
+                new Button(
+                        "Grant Access"
+                );
 
-        grantBtn.getStyleClass().add(
-                "btn-primary"
+        grantBtn.setOnAction(
+                e -> {
+
+                    if (
+                            selectedFile == null
+                    ) {
+                        return;
+                    }
+
+                    permissionService
+                            .grantAccess(
+                                    selectedFile.getId(),
+                                    usernameField.getText(),
+                                    permissionBox.getValue()
+                            );
+
+                    usernameField.clear();
+
+                    refreshPermissions();
+                }
         );
 
-        grantBtn.setOnAction(event -> {
-
-            permissionService.grantAccess(
-                    currentFileId,
-                    usernameField.getText(),
-                    permissionBox.getValue()
-            );
-
-            usernameField.clear();
-
-            refreshPermissions();
-        });
-
         HBox buttonRow =
-                new HBox(grantBtn);
+                new HBox(
+                        grantBtn
+                );
 
         buttonRow.setAlignment(
                 Pos.CENTER_RIGHT
@@ -284,9 +403,13 @@ public class Permissions {
 
         card.getChildren().addAll(
                 title,
-                usernameLabel,
+                new Label(
+                        "Username"
+                ),
                 usernameField,
-                permissionLabel,
+                new Label(
+                        "Permission"
+                ),
                 permissionBox,
                 buttonRow
         );
@@ -294,15 +417,16 @@ public class Permissions {
         return card;
     }
 
-    private static void showEditPermissionDialog(
+    private static void showEditDialog(
             PermissionModel permission
     ) {
 
-        ChoiceDialog<String> dialog =
+        ChoiceDialog<PermissionType>
+                dialog =
                 new ChoiceDialog<>(
-                        permission.getPermission().name(),
-                        "READ",
-                        "WRITE"
+                        permission.getPermission(),
+                        PermissionType.READ,
+                        PermissionType.WRITE
                 );
 
         dialog.setTitle(
@@ -314,48 +438,68 @@ public class Permissions {
                         + permission.getUsername()
         );
 
-        dialog.showAndWait().ifPresent(newPermission -> {
+        dialog.showAndWait()
+                .ifPresent(
+                        newPermission -> {
 
-            permissionService.updatePermission(
-                    currentFileId,
-                    permission.getUsername(),
-                    newPermission
+                            permissionService
+                                    .updatePermission(
+                                            selectedFile.getId(),
+                                            permission.getUsername(),
+                                            newPermission
+                                    );
+
+                            refreshPermissions();
+                        }
+                );
+    }
+
+    private static void loadFiles() {
+
+        fileSelector
+                .getItems()
+                .setAll(
+                        permissionService
+                                .getAvailableFiles()
+                );
+
+        if (
+                !fileSelector
+                        .getItems()
+                        .isEmpty()
+        ) {
+
+            selectedFile =
+                    fileSelector
+                            .getItems()
+                            .get(0);
+
+            fileSelector.setValue(
+                    selectedFile
+            );
+
+            ownerLabel.setText(
+                    "Owner: "
+                            + selectedFile.getOwner()
             );
 
             refreshPermissions();
-        });
-    }
-
-    public static void loadFile(
-            Long fileId,
-            String fileName,
-            String owner
-    ) {
-
-        currentFileId = fileId;
-
-        selectedFileLabel.setText(
-                "Selected File: " + fileName
-        );
-
-        ownerLabel.setText(
-                "Owner: " + owner
-        );
-
-        refreshPermissions();
+        }
     }
 
     private static void refreshPermissions() {
 
-        if (currentFileId == null) {
+        if (
+                selectedFile == null
+        ) {
             return;
         }
 
-        List<PermissionModel> result =
-                permissionService.getPermissions(
-                        currentFileId
-                );
-
-        permissions.setAll(result);
+        permissions.setAll(
+                permissionService
+                        .getPermissions(
+                                selectedFile.getId()
+                        )
+        );
     }
 }
