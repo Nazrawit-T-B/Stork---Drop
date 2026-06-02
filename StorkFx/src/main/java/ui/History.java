@@ -20,9 +20,12 @@ import java.util.Map;
 
 public class History {
 
+    private static final StackPane headerCardContainer = new StackPane();
+
     public static HBox historyHeader() {
         Label title = new Label("History");
         title.getStyleClass().add("page-title");
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -35,36 +38,34 @@ public class History {
 
     public static StackPane createTopHeroBanner() {
         Label brandTitle = new Label("History");
-        brandTitle.setStyle("-fx-font-size: 35 ; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 1px;");
-        Label subdesc=new Label("Access different Versions");
-        subdesc.setStyle("-fx-text-fill:white; -fx-letter-spacing: 2px; ");
+        brandTitle.setStyle("-fx-font-size: 35; -fx-font-weight: 900; -fx-text-fill: white;");
+
+        Label subdesc = new Label("Access different Versions");
+        subdesc.setStyle("-fx-text-fill: white;");
 
         VBox textLayout = new VBox(brandTitle, subdesc);
         textLayout.setAlignment(Pos.CENTER_LEFT);
         textLayout.setPadding(new Insets(0, 0, 0, 32));
 
-        ImageView storkLogoView = new ImageView();
+        ImageView logo = new ImageView();
         try {
-            Image image = new Image(Dashboard.class.getResourceAsStream("/img_2.png"));
-            storkLogoView.setImage(image);
-            storkLogoView.setFitWidth(160);
-            storkLogoView.setPreserveRatio(true);
-            storkLogoView.setSmooth(true);
-        } catch (Exception e) {
-
-        }
+            Image image = new Image(History.class.getResourceAsStream("/img_2.png"));
+            logo.setImage(image);
+            logo.setFitWidth(160);
+            logo.setPreserveRatio(true);
+        } catch (Exception ignored) {}
 
         StackPane.setAlignment(textLayout, Pos.CENTER_LEFT);
-        StackPane.setAlignment(storkLogoView, Pos.CENTER_RIGHT);
-        StackPane.setMargin(storkLogoView, new Insets(0, 32, 0, 0));
+        StackPane.setAlignment(logo, Pos.CENTER_RIGHT);
+        StackPane.setMargin(logo, new Insets(0, 32, 0, 0));
 
+        StackPane banner = new StackPane(textLayout, logo);
+        banner.setPrefHeight(160);
+        banner.setStyle("-fx-background-color: linear-gradient(to right, #1E293B, #0F172A); -fx-background-radius: 12;");
 
-        StackPane heroBanner = new StackPane(textLayout, storkLogoView);
-        heroBanner.setPrefHeight(160);
-        heroBanner.setStyle("-fx-background-color: linear-gradient(to right, #1E293B, #0F172A); -fx-background-radius: 12;");
-
-        return heroBanner;
+        return banner;
     }
+
     public static HBox fileHeaderCard(String masterFilename, String meta) {
         HBox card = new HBox(20);
         card.getStyleClass().add("card");
@@ -108,10 +109,11 @@ public class History {
         Button downloadBtn = new Button("Download Latest");
         downloadBtn.setGraphic(downloadIcon);
         downloadBtn.getStyleClass().add("history-download-btn");
-
+        
         if ("No file selected".equals(masterFilename)) {
             downloadBtn.setDisable(true);
         }
+
         downloadBtn.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save Latest File Version");
@@ -150,7 +152,8 @@ public class History {
 
         return card;
     }
-    public static VBox versionHistoryCard(VBox pageRoot) {
+
+    public static VBox versionHistoryCard() {
         VBox card = new VBox(18);
         card.getStyleClass().add("card");
         card.setPadding(new Insets(22));
@@ -186,7 +189,6 @@ public class History {
         placeholder.getStyleClass().add("activity-time");
         versions.getChildren().add(placeholder);
 
-
         fileDropdown.setOnAction(e -> {
             String selected = fileDropdown.getValue();
             if (selected == null) return;
@@ -196,7 +198,7 @@ public class History {
             loading.getStyleClass().add("activity-time");
             versions.getChildren().add(loading);
 
-            pageRoot.getChildren().set(0, fileHeaderCard(selected, "Loading..."));
+            headerCardContainer.getChildren().setAll(fileHeaderCard(selected, "Loading..."));
 
             Thread t = new Thread(() -> {
                 FileTransferService service = new FileTransferService();
@@ -212,12 +214,12 @@ public class History {
 
                         Map<String, String> latest = versionList.get(0);
                         String meta = latest.get("size") + "   •   Uploaded " + latest.get("uploadedAt");
-                        pageRoot.getChildren().set(0, fileHeaderCard(selected, meta));
+                        
+                        headerCardContainer.getChildren().setAll(fileHeaderCard(selected, meta));
 
                         for (int i = 0; i < versionList.size(); i++) {
                             Map<String, String> v = versionList.get(i);
                             
-                            // pass selected master filename down to guarantee server maps it correctly
                             versions.getChildren().add(createVersionRow(
                                     "Version " + v.get("version"),
                                     v.get("uploadedAt"),
@@ -246,7 +248,6 @@ public class History {
         card.getChildren().addAll(topRow, versions);
         return card;
     }
-
 
     private static HBox createVersionRow(
             String version, String date, String size, boolean current, String note, String storageFilename, String masterFilename) {
@@ -297,7 +298,6 @@ public class History {
         downloadBtn.setGraphic(downloadIcon);
         downloadBtn.getStyleClass().add("icon-btn");
         
-
         downloadBtn.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save Historical File Version");
@@ -312,16 +312,15 @@ public class History {
                 Thread t = new Thread(() -> {
                     FileTransferService service = new FileTransferService();
                     try {
-                        // Pass storage path filename directly to point explicitly to historical binaries
                         service.downloadFromServer(storageFilename, dest);
                         Platform.runLater(() -> {
                             downloadBtn.setDisable(false);
-                            downloadIcon.setIconColor(Color.web("#10B981")); // Turn green on success
+                            downloadIcon.setIconColor(Color.web("#10B981")); 
                         });
                     } catch (IOException ex) {
                         Platform.runLater(() -> {
                             downloadBtn.setDisable(false);
-                            downloadIcon.setIconColor(Color.web("#EF4444")); // Turn red on error
+                            downloadIcon.setIconColor(Color.web("#EF4444")); 
                         });
                         ex.printStackTrace();
                     }
@@ -341,21 +340,26 @@ public class History {
         return row;
     }
 
-
     public static BorderPane historyPage() {
         BorderPane mainArea = new BorderPane();
+
         mainArea.setTop(createTopHeroBanner());
+
         VBox contentLayout = new VBox(20);
-        contentLayout.setPadding(new Insets(20, 0, 0, 0)); // Clean spacing gap split separating the top banner and content body
-        VBox center = new VBox(24);
-        center.setPadding(new Insets(24));
-        VBox filesPane = versionHistoryCard(center);
+        contentLayout.setPadding(new Insets(20, 0, 0, 0));
+
+        VBox centerContentWrapper = new VBox(24);
+        headerCardContainer.getChildren().setAll(fileHeaderCard("No file selected", "Select a file from the dropdown"));
+        
+        VBox filesPane = versionHistoryCard();
         VBox.setVgrow(filesPane, Priority.ALWAYS);
 
-        HBox headerCard = fileHeaderCard("No file selected", "Select a file from the dropdown");
-        contentLayout.getChildren().addAll(headerCard, filesPane);
+        centerContentWrapper.getChildren().addAll(headerCardContainer, filesPane);
+        contentLayout.getChildren().add(centerContentWrapper);
+
         mainArea.setCenter(contentLayout);
         mainArea.setPadding(new Insets(24));
+
         return mainArea;
     }
 }
