@@ -142,188 +142,64 @@ public class Permissions {
 
     private static VBox permissionsTableCard() {
 
-        VBox card =
-                new VBox(15);
+        VBox card = new VBox(15);
+        card.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(card, Priority.ALWAYS);
+        card.getStyleClass().add("card");
+        card.setPadding(new Insets(20));
+        Label title = new Label("Current Access");
+        title.getStyleClass().add("section-title");
+        TableView<PermissionModel> table = new TableView<>();
+        table.setMaxWidth(Double.MAX_VALUE);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        table.setItems(permissions);
 
-        card.getStyleClass()
-                .add("card");
+        TableColumn<PermissionModel, String> userColumn = new TableColumn<>("User");
+        userColumn.setMinWidth(250);
+        userColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getUsername()));
 
-        card.setPadding(
-                new Insets(20)
-        );
+        TableColumn<PermissionModel, String> permissionColumn = new TableColumn<>("Permission");
+        permissionColumn.setMinWidth(150);
+        permissionColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPermission().name()));
 
-        Label title =
-                new Label(
-                        "Current Access"
-                );
+        TableColumn<PermissionModel,Void> actionColumn = new TableColumn<>("Actions");
+        actionColumn.setMinWidth(250);
+        actionColumn.setCellFactory(col -> new TableCell<>() {
+                private final Button editBtn = new Button("Edit");
+                private final Button removeBtn = new Button("Remove");
+                private final HBox controls = new HBox(8, editBtn, removeBtn);
+                {
+                        controls.setAlignment(Pos.CENTER);
+                        editBtn.setOnAction(e -> {
+                                PermissionModel permission = getTableView().getItems().get(getIndex());
+                                showEditDialog(permission);
+                        });
+                        removeBtn.setOnAction(e -> {
+                                PermissionModel permission = getTableView().getItems().get(getIndex());
+                                permissionService.revokeAccess(selectedFile.getId(), permission.getUsername());
+                                refreshPermissions();
+                        });
+                }
 
-        title.getStyleClass()
-                .add("section-title");
-
-        TableView<PermissionModel> table =
-                new TableView<>();
-
-        table.setItems(
-                permissions
-        );
-
-        TableColumn<
-                PermissionModel,
-                String
-                > userColumn =
-                new TableColumn<>("User");
-
-        userColumn.setCellValueFactory(
-                data ->
-                        new SimpleStringProperty(
-                                data.getValue()
-                                        .getUsername()
-                        )
-        );
-
-        TableColumn<
-                PermissionModel,
-                String
-                > permissionColumn =
-                new TableColumn<>("Permission");
-
-        permissionColumn.setCellValueFactory(
-                data ->
-                        new SimpleStringProperty(
-                                data.getValue()
-                                        .getPermission()
-                                        .name()
-                        )
-        );
-
-        TableColumn<
-                PermissionModel,
-                Void
-                > actionColumn =
-                new TableColumn<>("Actions");
-
-        actionColumn.setCellFactory(
-                col ->
-                        new TableCell<>() {
-
-                            private final Button editBtn =
-                                    new Button(
-                                            "Edit"
-                                    );
-
-                            private final Button removeBtn =
-                                    new Button(
-                                            "Remove"
-                                    );
-
-                            private final HBox controls =
-                                    new HBox(
-                                            8,
-                                            editBtn,
-                                            removeBtn
-                                    );
-
-                            {
-
-                                controls.setAlignment(
-                                        Pos.CENTER
-                                );
-
-                                editBtn.setOnAction(
-                                        e -> {
-
-                                            PermissionModel permission =
-                                                    getTableView()
-                                                            .getItems()
-                                                            .get(
-                                                                    getIndex()
-                                                            );
-
-                                            showEditDialog(
-                                                    permission
-                                            );
-                                        }
-                                );
-
-                                removeBtn.setOnAction(
-                                        e -> {
-
-                                            PermissionModel permission =
-                                                    getTableView()
-                                                            .getItems()
-                                                            .get(
-                                                                    getIndex()
-                                                            );
-
-                                            permissionService
-                                                    .revokeAccess(
-                                                            selectedFile.getId(),
-                                                            permission.getUsername()
-                                                    );
-
-                                            refreshPermissions();
-                                        }
-                                );
-                            }
-
-                            @Override
-                            protected void updateItem(
-                                    Void item,
-                                    boolean empty
-                            ) {
-
-                                super.updateItem(
-                                        item,
-                                        empty
-                                );
-
-                                if (empty) {
-
-                                    setGraphic(
-                                            null
-                                    );
-
-                                    return;
-                                }
-
-                                PermissionModel permission =
-                                        getTableView()
-                                                .getItems()
-                                                .get(
-                                                        getIndex()
-                                                );
-
-                                if (
-                                        permission.getPermission()
-                                                ==
-                                                PermissionType.OWNER
-                                ) {
-
-                                    setGraphic(
-                                            new Label("-")
-                                    );
-
-                                } else {
-
-                                    setGraphic(
-                                            controls
-                                    );
-                                }
-                            }
+                @Override
+                protected void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                                setGraphic(null);
+                                return;
                         }
-        );
+                        PermissionModel permission = getTableView().getItems().get(getIndex());
+                        if (permission.getPermission() == PermissionType.OWNER) {
+                                setGraphic(new Label("-"));
+                        } else {
+                                setGraphic(controls);
+                        }
+                }
+        });
+        table.getColumns().addAll(userColumn, permissionColumn,actionColumn);
 
-        table.getColumns().addAll(
-                userColumn,
-                permissionColumn,
-                actionColumn
-        );
-
-        card.getChildren().addAll(
-                title,
-                table
-        );
-
+        card.getChildren().addAll(title, table);
+        VBox.setVgrow(table, Priority.ALWAYS);
         return card;
     }
 

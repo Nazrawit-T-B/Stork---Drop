@@ -25,10 +25,6 @@ public class PermissionService {
     @Autowired
     private FileRepository fileRepository;
 
-    public String getPermission(UserEntity user, FileEntity file) {
-        return permissionRepository.findByUserAndFile(user, file).getPermissionType().name();
-    }
-
     public List<PermissionEntity> getFilePermissions(Long fileId) {
         return permissionRepository.findByFileId(fileId);
     }
@@ -42,15 +38,6 @@ public class PermissionService {
         permission.setFile(fileRepository.findById(fileId).orElse(null));
         permission.setUser(userRepository.findByUsername(username).orElse(null));
         permission.setPermissionType(permissionType);
-        permissionRepository.save(permission);
-    }
-
-    public void grantPermission(String username, FileEntity file, String permissionType) {
-        PermissionEntity permission = new PermissionEntity();
-        UserEntity user = userRepository.findByUsername(username).orElse(null);
-        permission.setUser(user);
-        permission.setFile(file);
-        permission.setPermissionType(PermissionType.valueOf(permissionType));
         permissionRepository.save(permission);
     }
 
