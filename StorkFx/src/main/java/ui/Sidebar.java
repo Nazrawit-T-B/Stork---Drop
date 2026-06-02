@@ -35,7 +35,7 @@ public class Sidebar {
 
         ToggleGroup group = new ToggleGroup();
 
-        // 1. SYNC & ACTIVITY
+
         ToggleButton btnSync = new ToggleButton("Sync & Activity");
         FontIcon syncIcon = new FontIcon("mdi2h-home-outline");
         syncIcon.setIconSize(20); syncIcon.setIconColor(Color.WHITE);
@@ -44,8 +44,7 @@ public class Sidebar {
         btnSync.setOnAction(e -> {
             root.setCenter(Dashboard.createMainWorkspaceView());
         });
-
-        // 2. FILES
+        
         ToggleButton btnFiles = new ToggleButton("Files");
         FontIcon filesIcon = new FontIcon("mdi2f-folder");
         filesIcon.setIconSize(20); filesIcon.setIconColor(Color.WHITE);
@@ -66,21 +65,21 @@ public class Sidebar {
             root.setCenter(mainArea);
         });
 
-        // 3. PERMISSIONS
+
         ToggleButton btnPermission = new ToggleButton("Permissions");
         FontIcon permissionIcon = new FontIcon("mdi2l-link-lock");
         permissionIcon.setIconSize(20); permissionIcon.setIconColor(Color.WHITE);
         btnPermission.setToggleGroup(group); btnPermission.setGraphic(permissionIcon); btnPermission.getStyleClass().add("nav-button");
         btnPermission.setOnAction(e -> root.setCenter(Permissions.permissionsPage()));
 
-        // 4. HISTORY
+
         ToggleButton btnHistory = new ToggleButton("History");
         FontIcon historyIcon = new FontIcon("mdi2r-refresh");
         historyIcon.setIconSize(20); historyIcon.setIconColor(Color.WHITE);
         btnHistory.setToggleGroup(group); btnHistory.setGraphic(historyIcon); btnHistory.getStyleClass().add("nav-button");
         btnHistory.setOnAction(e -> root.setCenter(History.historyPage()));
 
-        // 5. AUTHENTICATION TOGGLE BUTTON
+
         ToggleButton btnAuth = new ToggleButton();
         btnAuth.setToggleGroup(group);
         btnAuth.setSelected(true);
@@ -90,8 +89,6 @@ public class Sidebar {
         authIcon.setIconSize(20);
         authIcon.setIconColor(Color.WHITE);
         btnAuth.setGraphic(authIcon);
-
-        // Configure authentication button look and action strictly via active session indicators
         if (SessionManager.isLoggedIn()) {
             btnAuth.setText("Logout");
             authIcon.setIconCode(org.kordamp.ikonli.materialdesign2.MaterialDesignL.LOGOUT);
@@ -110,15 +107,11 @@ public class Sidebar {
             });
         }
 
-        // CARDS & CAROUSELS
-
-
         VBox promoCard = createPromoCard();
         VBox.setMargin(promoCard, new Insets(10, 0, 0, 0));
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        // 6. PROFILE SECTION CONTAINER
         HBox profile = createProfileSection();
         logo.getStyleClass().add("brand-label");
         
@@ -192,7 +185,7 @@ public class Sidebar {
                         "-fx-font-weight: bold;"
         );
 
-        // Body
+
         Label body = new Label(
                 "Your files are automatically encrypted and backed up\n" +
                         "to the cloud. Access them from anywhere, anytime —\n" +
@@ -202,7 +195,7 @@ public class Sidebar {
         body.setAlignment(Pos.CENTER);
         body.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
-        // Divider
+
 
 
         // Buttons

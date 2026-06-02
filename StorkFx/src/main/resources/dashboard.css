@@ -96,7 +96,7 @@
     -fx-font-weight: bold;
 }
 
-/* ── BLUE ACTIVE TRANSFERS CARD ───────────── */
+
 .transfers-highlight-card {
     -fx-background-color: #2D7FF9;
     -fx-background-radius: 14;
@@ -135,14 +135,14 @@
     -fx-background-color: rgba(255,255,255,0.15);
 }
 
-/* ── SECTION TITLE ────────────────────────── */
+
 .section-title {
     -fx-font-size: 15;
     -fx-font-weight: bold;
     -fx-text-fill: #0F172A;
 }
 
-/* ── PAUSE ALL BUTTON ─────────────────────── */
+
 .btn-pause {
     -fx-background-color: white;
     -fx-border-color: #E2E8F0;
@@ -160,7 +160,7 @@
     -fx-border-color: #CBD5E1;
 }
 
-/* ── TRANSFER ROWS ────────────────────────── */
+
 .transfer-row {
     -fx-background-color: #F8FAFC;
     -fx-background-radius: 10;
@@ -212,7 +212,7 @@
     -fx-text-fill: #EF4444;
 }
 
-/* ── VIEW ALL / HISTORY LINKS ─────────────── */
+
 .view-all-link {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -225,7 +225,7 @@
     -fx-text-fill: #1D4ED8;
 }
 
-/* ── RECENT ACTIVITY ROWS ─────────────────── */
+
 .activity-row {
     -fx-padding: 8 0 8 0;
     -fx-border-color: transparent transparent #F1F5F9 transparent;
@@ -253,7 +253,7 @@
     -fx-text-fill: #94A3B8;
 }
 
-/* ── FILTER COMBOBOX ──────────────────────── */
+
 .filter-combo {
     -fx-background-color: white;
     -fx-border-color: #E2E8F0;

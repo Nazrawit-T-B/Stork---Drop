@@ -6,7 +6,6 @@
     -fx-spacing: 4;
 }
 
-
 .brand-box {
     -fx-alignment: CENTER_LEFT;
     -fx-spacing: 10;
@@ -388,7 +387,7 @@
     -fx-text-fill: #94A3B8;
 }
 
-/* ── SEARCH BAR ───────────────────────────── */
+
 .search-field {
     -fx-background-color: white;
     -fx-border-color: #E2E8F0;
@@ -405,7 +404,7 @@
     -fx-effect: dropshadow(gaussian, rgba(45,127,249,0.2), 6, 0, 0, 0);
 }
 
-/* ── TOP BAR ──────────────────────────────── */
+
 .top-bar {
     -fx-background-color: white;
     -fx-padding: 12 24 12 24;

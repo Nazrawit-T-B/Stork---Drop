@@ -46,7 +46,7 @@ public class FileController {
     @PostMapping("/file")
 public ResponseEntity<String> uploadFile(
         @RequestParam("file") MultipartFile file, 
-        @RequestParam("isPublic") Boolean isPublic, // 🆕 Gather parameter from form-data
+        @RequestParam("isPublic") Boolean isPublic,
         HttpServletRequest request) {
     try {
         UserEntity user = (UserEntity) request.getAttribute("authenticatedUser");
@@ -54,7 +54,6 @@ public ResponseEntity<String> uploadFile(
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
         }
 
-        // Pass the visibility choice right into the storage service logic
         FileEntity fileEntity = fileStorageService.saveFile(file, user, isPublic);
         permissionService.makeOwner(user, fileEntity);
         
@@ -106,18 +105,16 @@ public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fi
             return ResponseEntity.notFound().build();
         }
 
-        // 🆕 STRATEGY: Allow download if it's a public file OR if the user has explicit permissions
+
         boolean isPublic = fileEntity.getIsPublic() != null && fileEntity.getIsPublic();
         
         if (!isPublic) {
-            // If it's private, fall back to checking the permission table
             PermissionEntity permission = permissionRepository.findByUserAndFile(user, fileEntity);
             if (permission == null) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
 
-        // Processing the binary download stream below remains unchanged...
         var fileToDownload = fileStorageService.getDownloadFile(filename);
         System.out.println("Requested file: " + filename);
         

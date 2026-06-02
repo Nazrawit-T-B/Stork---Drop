@@ -19,29 +19,29 @@ public class SyncLogEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // UPLOAD, DOWNLOAD, SYNC, DELETE
+
     @Column(nullable = false)
     private String action;
 
     @Column(nullable = false)
     private LocalDateTime timestamp = LocalDateTime.now();
 
-    // Many logs belong to one user
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // Many logs belong to one file
+
     @ManyToOne
     @JoinColumn(name = "file_id", nullable = false)
     private FileEntity file;
 
-    // ===== Constructors =====
+
 
     public SyncLogEntity() {
     }
 
-    // ===== Getters and Setters =====
+
 
     public Long getId() {
         return id;

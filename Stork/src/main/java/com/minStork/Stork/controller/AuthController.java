@@ -25,7 +25,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Fill all fields");
             }
 
-            // Call updated service method
+
             Optional<UserEntity> authenticatedUser = authService.login(
                     request.getIdentifier().trim(),
                     request.getPassword()
@@ -34,7 +34,6 @@ public class AuthController {
             if (authenticatedUser.isPresent()) {
                 UserEntity user = authenticatedUser.get();
 
-                // Construct JSON containing token, fullName, and email dynamically
                 String jsonResponse = String.format(
                         "{\"token\":\"%s\",\"fullName\":\"%s\",\"email\":\"%s\"}",
                         user.getAuthToken(),

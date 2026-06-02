@@ -32,7 +32,6 @@ public class UserEntity {
     @Column(nullable = false)
     private String passwordHash;
 
-    // Stores the active validation token string used to authorize parallel requests securely
     @Column(unique = true, length = 255)
     private String authToken;
 
@@ -42,7 +41,7 @@ public class UserEntity {
     @OneToMany(mappedBy = "owner")
     private List<FileEntity> ownedFiles = new ArrayList<>();
 
-    // One user can upload many versions
+
     @OneToMany(mappedBy = "uploadedBy")
     private List<FileVersionEntity> uploadedVersions = new ArrayList<>();
 
