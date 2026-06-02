@@ -20,7 +20,6 @@ import java.util.Map;
 
 public class History {
 
-    // HEADER
     public static HBox historyHeader() {
         Label title = new Label("History");
         title.getStyleClass().add("page-title");
@@ -109,13 +108,10 @@ public class History {
         Button downloadBtn = new Button("Download Latest");
         downloadBtn.setGraphic(downloadIcon);
         downloadBtn.getStyleClass().add("history-download-btn");
-        
-        // Disable by default if no genuine selection is present
+
         if ("No file selected".equals(masterFilename)) {
             downloadBtn.setDisable(true);
         }
-
-        // 📂 DOWNLOAD RESOLUTION: Run FileChooser safely on UI thread loop
         downloadBtn.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save Latest File Version");
@@ -154,8 +150,6 @@ public class History {
 
         return card;
     }
-
-    // VERSION HISTORY CARD — dynamic
     public static VBox versionHistoryCard(VBox pageRoot) {
         VBox card = new VBox(18);
         card.getStyleClass().add("card");
@@ -170,7 +164,6 @@ public class History {
         ComboBox<String> fileDropdown = new ComboBox<>();
         fileDropdown.setPromptText("Select a file...");
 
-        // Populate dropdown from backend registry pipeline
         Thread loadThread = new Thread(() -> {
             FileTransferService service = new FileTransferService();
             try {
@@ -193,7 +186,7 @@ public class History {
         placeholder.getStyleClass().add("activity-time");
         versions.getChildren().add(placeholder);
 
-        // Dropdown actions execution block
+
         fileDropdown.setOnAction(e -> {
             String selected = fileDropdown.getValue();
             if (selected == null) return;
@@ -254,7 +247,7 @@ public class History {
         return card;
     }
 
-    // VERSION ROW — Track both physical storage tracking name AND master name
+
     private static HBox createVersionRow(
             String version, String date, String size, boolean current, String note, String storageFilename, String masterFilename) {
 
@@ -304,7 +297,7 @@ public class History {
         downloadBtn.setGraphic(downloadIcon);
         downloadBtn.getStyleClass().add("icon-btn");
         
-        // 📂 DOWNLOAD RESOLUTION: UI-thread file selector intercept
+
         downloadBtn.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save Historical File Version");

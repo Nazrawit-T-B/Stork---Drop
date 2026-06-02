@@ -17,23 +17,23 @@ import java.util.List;
 
 public class Dashboard {
 
-    // Containers for functional tracking
+
     public record SharedFile(String filename, String ownerName, String size) {}
 
-    // Callback event listener definitions
+
     public interface DownloadHandler { void onDownload(SharedFile file, File destinationPath); }
     public interface RefreshHandler { void onRefresh(); }
 
-    // Screen State Containers
+
     private static List<SharedFile> globalSharedFiles = new ArrayList<>();
     private static final List<String> runtimeNotifications = new ArrayList<>();
 
-    // Re-renderable Layout Sub-containers
+
     private static final VBox discoveryFilesContainer = new VBox(8);
     private static final Label notificationBadge = new Label("0");
     private static TextField searchField;
 
-    // Operational Handlers
+
     private static DownloadHandler downloadHandler;
     private static RefreshHandler refreshHandler;
 
@@ -42,9 +42,6 @@ public class Dashboard {
         refreshHandler = refresh;
     }
 
-    /**
-     * Safely populates background threads discoveries straight into layout view items
-     */
     public static void updateDashboardData(List<SharedFile> files, List<Object> ignoredPeers) {
         Platform.runLater(() -> {
             globalSharedFiles = new ArrayList<>(files);
@@ -64,7 +61,6 @@ public class Dashboard {
 
   
     public static StackPane createTopHeroBanner() {
-        // Left Side: Bold Title text layout
         Label brandTitle = new Label("Sync & Activity");
         brandTitle.setStyle("-fx-font-size: 35 ; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 1px;");
 
@@ -76,7 +72,7 @@ public class Dashboard {
         try {
             Image image = new Image(Dashboard.class.getResourceAsStream("/img_2.png"));
             storkLogoView.setImage(image);
-            storkLogoView.setFitWidth(160); // Increased sizing for a true oversized hero aesthetic
+            storkLogoView.setFitWidth(160);
             storkLogoView.setPreserveRatio(true);
             storkLogoView.setSmooth(true);
         } catch (Exception e) {
@@ -87,9 +83,9 @@ public class Dashboard {
         StackPane.setAlignment(storkLogoView, Pos.CENTER_RIGHT);
         StackPane.setMargin(storkLogoView, new Insets(0, 32, 0, 0));
 
-        // High-end background gradient profile match
+
         StackPane heroBanner = new StackPane(textLayout, storkLogoView);
-        heroBanner.setPrefHeight(160); // Enlarged container frame footprint height
+        heroBanner.setPrefHeight(160);
         heroBanner.setStyle("-fx-background-color: linear-gradient(to right, #1E293B, #0F172A); -fx-background-radius: 12;");
         
         return heroBanner;
@@ -109,7 +105,7 @@ public class Dashboard {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Dynamic Search Field Box Control
+
         searchField = new TextField();
         searchField.setPromptText("Search files...");
         searchField.getStyleClass().add("search-field");
@@ -131,7 +127,7 @@ public class Dashboard {
 
         ScrollPane scrollPane = new ScrollPane(discoveryFilesContainer);
         scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(460); // Tall structural viewport layout allocation frame
+        scrollPane.setPrefHeight(460);
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-viewport-background: transparent;");
 
         component.getChildren().addAll(titleRow, scrollPane);
@@ -202,7 +198,7 @@ public class Dashboard {
         
         mainArea.setTop(createTopHeroBanner());
         VBox contentLayout = new VBox(20);
-        contentLayout.setPadding(new Insets(20, 0, 0, 0)); // Clean spacing gap split separating the top banner and content body
+        contentLayout.setPadding(new Insets(20, 0, 0, 0));
         
         VBox filesPane = publicSharedDiscoveriesPanel();
         VBox.setVgrow(filesPane, Priority.ALWAYS);

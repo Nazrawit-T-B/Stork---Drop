@@ -16,17 +16,17 @@ public class PermissionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // READ, WRITE, OWNER
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PermissionType permissionType;
 
-    // Many permissions belong to one user
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // Many permissions belong to one file
+
     @ManyToOne
     @JoinColumn(name = "file_id", nullable = false)
     private FileEntity file;

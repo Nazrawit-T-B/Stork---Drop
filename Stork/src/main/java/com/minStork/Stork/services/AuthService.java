@@ -19,7 +19,6 @@ public class AuthService {
         this.repo = repo;
     }
 
-    // CHANGED: Now returns the UserEntity with a newly generated token if validation passes
     @Transactional
     public Optional<UserEntity> login(String input, String password) {
         Optional<UserEntity> userOpt = repo.findByUsername(input);
@@ -31,11 +30,9 @@ public class AuthService {
         if (userOpt.isPresent() && encoder.matches(password, userOpt.get().getPasswordHash())) {
             UserEntity user = userOpt.get();
 
-            // Generate a secure, unique token string from scratch
+
             String uniqueToken = "STORK-TOKEN-" + UUID.randomUUID().toString().toUpperCase();
             user.setAuthToken(uniqueToken);
-
-            // Persist the token to the database record
             repo.updateAuthToken(user.getId(),uniqueToken);
             //repo.save(user);
 

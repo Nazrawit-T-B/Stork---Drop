@@ -19,8 +19,6 @@ import jakarta.persistence.Table;
 @Table(name = "files")
 public class FileEntity {
 
-    //autoincremented value indicated by generated value
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,21 +49,20 @@ private Boolean isPublic = false;
     @JoinColumn(name = "owner_id", nullable = false)
     private UserEntity owner;
 
-    // One file can have many versions
-    //Foreign Key
+
     @OneToMany(mappedBy = "file", cascade = CascadeType.ALL)
     private List<FileVersionEntity> versions = new ArrayList<>();
 
-    // One file can have many permissions
+
     @OneToMany(mappedBy = "file", cascade = CascadeType.ALL)
     private List<PermissionEntity> permissions = new ArrayList<>();
 
-    // ===== Constructors =====
+
 
     public FileEntity() {
     }
 
-    // ===== Getters and Setters =====
+
 
     public Long getId() {
         return id;

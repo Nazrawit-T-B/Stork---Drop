@@ -28,22 +28,21 @@ public class FileVersionEntity {
     @Column(nullable = false)
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
-    // Many versions belong to one file
+
     @ManyToOne
     @JoinColumn(name = "file_id", nullable = false)
     private FileEntity file;
 
-    // Many versions can be uploaded by one user
+
     @ManyToOne
     @JoinColumn(name = "uploaded_by", nullable = false)
     private UserEntity uploadedBy;
 
-    // ===== Constructors =====
 
     public FileVersionEntity() {
     }
 
-    // ===== Getters and Setters =====
+
 
     public Long getId() {
         return id;
