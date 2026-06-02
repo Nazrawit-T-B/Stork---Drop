@@ -211,7 +211,6 @@ public class FileTransferService {
             String filename = extractValue(obj, "filename");
             String ownerName = extractValue(obj, "ownerName");
             
-            // Format size beautifully (Convert raw bytes string to KB/MB readable formatting)
             String rawSize = extractValue(obj, "size");
             String sizeStr = rawSize + " B";
             try {
