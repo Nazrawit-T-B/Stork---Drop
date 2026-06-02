@@ -17,10 +17,12 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import model.FileModel;
 import model.PermissionModel;
@@ -50,7 +52,7 @@ public class Permissions {
         content.setPadding(new Insets(24));
 
         content.getChildren().addAll(
-                permissionsHeader(),
+                createTopHeroBanner(),
                 fileInfoCard(),
                 permissionsTableCard(),
                 shareCard()
@@ -63,27 +65,34 @@ public class Permissions {
         return root;
     }
 
-    private static HBox permissionsHeader() {
+    public static StackPane createTopHeroBanner() {
+        Label brandTitle = new Label("Permissions");
+        brandTitle.setStyle("-fx-font-size: 35; -fx-font-weight: 900; -fx-text-fill: white;");
 
-        Label title =
-                new Label("Permissions");
+        Label subdesc = new Label("Control access to your files");
+        subdesc.setStyle("-fx-text-fill: white;");
 
-        title.getStyleClass()
-                .add("page-title");
+        VBox textLayout = new VBox(brandTitle, subdesc);
+        textLayout.setAlignment(Pos.CENTER_LEFT);
+        textLayout.setPadding(new Insets(0, 0, 0, 32));
 
-        Region spacer =
-                new Region();
+        ImageView logo = new ImageView();
+        try {
+            Image image = new Image(History.class.getResourceAsStream("/img_2.png"));
+            logo.setImage(image);
+            logo.setFitWidth(160);
+            logo.setPreserveRatio(true);
+        } catch (Exception ignored) {}
 
-        HBox.setHgrow(
-                spacer,
-                Priority.ALWAYS
-        );
+        StackPane.setAlignment(textLayout, Pos.CENTER_LEFT);
+        StackPane.setAlignment(logo, Pos.CENTER_RIGHT);
+        StackPane.setMargin(logo, new Insets(0, 32, 0, 0));
 
-        return new HBox(
-                20,
-                title,
-                spacer
-        );
+        StackPane banner = new StackPane(textLayout, logo);
+        banner.setPrefHeight(160);
+        banner.setStyle("-fx-background-color: linear-gradient(to right, #1E293B, #0F172A); -fx-background-radius: 12;");
+
+        return banner;
     }
 
     private static VBox fileInfoCard() {
